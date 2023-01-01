@@ -20,8 +20,10 @@ local function guid_generate()
     return bytes
 end
 
-local function guid_format(guid, style)
-    style = style or 'd'
+local function guid_print(guid, style)
+    if style == '' then
+        style = 'd'
+    end
 
     -- Format specifier definition:
     -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
@@ -45,20 +47,26 @@ local function guid_format(guid, style)
         format = '{0x%.2x%.2x%.2x%.2x,0x%.2x%.2x,0x%.2x%.2x,{0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x}}'
     end
 
-    local formatted = string.format(format, unpack(guid))
+    local guid_printed = string.format(format, unpack(guid))
     if style:upper() == style then
-        formatted = formatted:upper():gsub('X', 'x')
+        guid_printed = guid_printed:upper():gsub('X', 'x')
     end
 
-    return formatted
+    return guid_printed
 end
 
 local function guid_insert(style)
     local pos = get_cursor_pos()
     local guid = guid_generate()
-    insert_text_at_pos(guid_format(guid, style), pos)
+    local guid_printed = guid_print(guid, style)
+    insert_text_at_pos(guid_printed, pos)
+end
+
+local function guid_format()
+
 end
 
 return {
-    guid_insert = guid_insert
+    guid_format = guid_format,
+    guid_insert = guid_insert,
 }
