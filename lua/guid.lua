@@ -5,10 +5,8 @@ end
 
 local function insert_text_at_pos(text, pos)
     local line = vim.fn.getline(pos.row)
-    ---@diagnostic disable-next-line: param-type-mismatch
-    local prefix = string.sub(line, 0, pos.col - 1)
-    ---@diagnostic disable-next-line: param-type-mismatch
-    local suffix = string.sub(line, pos.col)
+    local prefix = string.sub(line, 0, pos.col - 1) ---@diagnostic disable-line: param-type-mismatch
+    local suffix = string.sub(line, pos.col) ---@diagnostic disable-line: param-type-mismatch
     vim.fn.setline(pos.row, prefix .. text .. suffix)
 end
 
@@ -38,7 +36,7 @@ local function guid_generate()
 end
 
 local function guid_parse(text)
-    local text_stripped = text:gsub('[-]', '')
+    local text_stripped = text:gsub('[{}()%-, ]', ''):gsub('0x', '')
     assert(#text_stripped == 32)
 
     local bytes = {}
@@ -85,8 +83,6 @@ local function guid_print(guid, style)
     return guid_printed
 end
 
--- [465a78ad-93cc-732e-a836-9824d49506d6]
-
 local function guid_insert(style)
     local pos = get_cursor_pos()
     local guid = guid_generate()
@@ -97,7 +93,11 @@ end
 local function guid_format(style)
     local pos = get_cursor_pos()
     local patterns = {
-        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}'
+        '{0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}}}',
+        '([0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\})', -- p
+        '{[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}}', -- b
+        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}',   -- d
+        '[0-9a-fA-F]\\{32\\}',                                                                               -- n
     }
 
     for _, pattern in ipairs(patterns) do
@@ -105,14 +105,14 @@ local function guid_format(style)
         if match_pos then
             local guid = guid_parse(match_pos.text)
             local line = vim.fn.getline(pos.row)
-            ---@diagnostic disable-next-line: undefined-field
-            local line_prefix = line:sub(1, match_pos.col - 1)
-            ---@diagnostic disable-next-line: undefined-field
-            local line_suffix = line:sub(match_pos.col + #match_pos.text)
+            local line_prefix = line:sub(1, match_pos.col - 1) ---@diagnostic disable-line: undefined-field
+            local line_suffix = line:sub(match_pos.col + #match_pos.text) ---@diagnostic disable-line: undefined-field
             vim.fn.setline(match_pos.row, line_prefix .. guid_print(guid, style) .. line_suffix)
             return
         end
     end
+
+    vim.api.nvim_notify('GUID not found at cursor!', vim.log.levels.ERROR, {})
 end
 
 return {
