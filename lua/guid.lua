@@ -1,3 +1,14 @@
+Config = {
+    default_style = 'd',
+    space_after_comma = true,
+}
+
+local function setup(config)
+    for key, value in pairs(config) do
+        Config[key] = config[key] or value
+    end
+end
+
 local function get_cursor_pos()
     local _, row, col, _ = unpack(vim.fn.getpos('.'))
     return {row = row, col = col}
@@ -50,7 +61,7 @@ end
 
 local function guid_print(guid, style)
     if style == '' then
-        style = 'd'
+        style = Config.default_style
     end
 
     -- Format specifier definition:
@@ -73,6 +84,9 @@ local function guid_print(guid, style)
     elseif style_lower == 'x' then
         -- {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}}
         format = '{0x%.2x%.2x%.2x%.2x,0x%.2x%.2x,0x%.2x%.2x,{0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x}}'
+    else
+        vim.api.nvim_notify('Unrecognized GUID format!', vim.log.levels.ERROR, {})
+        return
     end
 
     local guid_printed = string.format(format, unpack(guid))
@@ -80,43 +94,48 @@ local function guid_print(guid, style)
         guid_printed = guid_printed:upper():gsub('X', 'x')
     end
 
+    if Config.space_after_comma then
+        guid_printed = guid_printed:gsub(',', ', ')
+    end
+
     return guid_printed
 end
 
 local function guid_insert(style)
-    local pos = get_cursor_pos()
-    local guid = guid_generate()
-    local guid_printed = guid_print(guid, style)
-    insert_text_at_pos(guid_printed, pos)
+    local guid_printed = guid_print(guid_generate(), style)
+    if guid_printed then
+        insert_text_at_pos(guid_printed, get_cursor_pos())
+    end
 end
 
 local function guid_format(style)
-    local pos = get_cursor_pos()
     local guid_patterns = {
-        '{0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}}}', -- x
-        '([0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\})', -- p
-        '{[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}}', -- b
+        '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
+        '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
+        '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
         '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
         '[0-9a-fA-F]\\{32\\}', -- n
     }
 
     for _, guid_pattern in ipairs(guid_patterns) do
-        local match_pos = find_pattern_at_pos(guid_pattern, pos)
+        local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos())
         if match_pos then
-            local guid = guid_parse(match_pos.text)
-            local guid_printed = guid_print(guid, style)
-            local line = vim.fn.getline(pos.row)
+            local line = vim.fn.getline(match_pos.row)
             local line_prefix = line:sub(1, match_pos.col - 1) ---@diagnostic disable-line: undefined-field
             local line_suffix = line:sub(match_pos.col + #match_pos.text) ---@diagnostic disable-line: undefined-field
-            vim.fn.setline(match_pos.row, line_prefix .. guid_printed .. line_suffix)
+            local guid_printed = guid_print(guid_parse(match_pos.text), style)
+            if guid_printed then
+                vim.fn.setline(match_pos.row, line_prefix .. guid_printed .. line_suffix)
+            end
             return
         end
     end
 
-    vim.api.nvim_notify('GUID not found at cursor!', vim.log.levels.ERROR, {})
+    vim.api.nvim_notify('No GUID found at cursor!', vim.log.levels.ERROR, {})
 end
 
 return {
+    setup = setup,
     guid_format = guid_format,
     guid_insert = guid_insert,
 }
