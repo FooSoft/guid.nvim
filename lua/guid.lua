@@ -92,22 +92,23 @@ end
 
 local function guid_format(style)
     local pos = get_cursor_pos()
-    local patterns = {
-        '{0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}}}',
+    local guid_patterns = {
+        '{0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}}}', -- x
         '([0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\})', -- p
         '{[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}}', -- b
-        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}',   -- d
-        '[0-9a-fA-F]\\{32\\}',                                                                               -- n
+        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
+        '[0-9a-fA-F]\\{32\\}', -- n
     }
 
-    for _, pattern in ipairs(patterns) do
-        local match_pos = find_pattern_at_pos(pattern, pos)
+    for _, guid_pattern in ipairs(guid_patterns) do
+        local match_pos = find_pattern_at_pos(guid_pattern, pos)
         if match_pos then
             local guid = guid_parse(match_pos.text)
+            local guid_printed = guid_print(guid, style)
             local line = vim.fn.getline(pos.row)
             local line_prefix = line:sub(1, match_pos.col - 1) ---@diagnostic disable-line: undefined-field
             local line_suffix = line:sub(match_pos.col + #match_pos.text) ---@diagnostic disable-line: undefined-field
-            vim.fn.setline(match_pos.row, line_prefix .. guid_print(guid, style) .. line_suffix)
+            vim.fn.setline(match_pos.row, line_prefix .. guid_printed .. line_suffix)
             return
         end
     end
