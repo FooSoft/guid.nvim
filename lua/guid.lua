@@ -1,11 +1,30 @@
 Config = {
+    comma_space = false,
     default_style = 'd',
-    space_after_comma = true,
+    object_char = 'g',
+}
+
+Guid_Patterns = {
+    '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
+    '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
+    '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
+    '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
+    '[0-9a-fA-F]\\{32\\}', -- n
 }
 
 local function setup(config)
-    for key, value in pairs(config) do
-        Config[key] = config[key] or value
+    if config then
+        for key, value in pairs(config) do
+            Config[key] = config[key] or value
+        end
+    end
+
+    if Config.object_char then
+        for _, mode in ipairs({'x', 'o'}) do
+            for _, prefix in ipairs({'i', 'a'}) do
+                vim.api.nvim_set_keymap(mode, prefix .. Config.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true})
+            end
+        end
     end
 end
 
@@ -29,10 +48,10 @@ local function find_pattern(pattern, flags)
     end
 end
 
-local function find_pattern_at_pos(pattern, pos)
+local function find_pattern_at_pos(pattern, pos, check_col)
     for _, flags in ipairs({'cnW', 'bnW'}) do
         local match_pos = find_pattern(pattern, flags)
-        if match_pos and match_pos.row == pos.row and match_pos.col <= pos.col and match_pos.col + #match_pos.text > pos.col then
+        if match_pos and match_pos.row == pos.row and (not check_col or match_pos.col <= pos.col and match_pos.col + #match_pos.text > pos.col) then
             return match_pos
         end
     end
@@ -94,7 +113,7 @@ local function guid_print(guid, style)
         guid_printed = guid_printed:upper():gsub('X', 'x')
     end
 
-    if Config.space_after_comma then
+    if Config.comma_space then
         guid_printed = guid_printed:gsub(',', ', ')
     end
 
@@ -109,16 +128,8 @@ local function guid_insert(style)
 end
 
 local function guid_format(style)
-    local guid_patterns = {
-        '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
-        '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
-        '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
-        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
-        '[0-9a-fA-F]\\{32\\}', -- n
-    }
-
-    for _, guid_pattern in ipairs(guid_patterns) do
-        local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos())
+    for _, guid_pattern in ipairs(Guid_Patterns) do
+        local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), true)
         if match_pos then
             local line = vim.fn.getline(match_pos.row)
             local line_prefix = line:sub(1, match_pos.col - 1) ---@diagnostic disable-line: undefined-field
@@ -134,8 +145,19 @@ local function guid_format(style)
     vim.api.nvim_notify('No GUID found at cursor!', vim.log.levels.ERROR, {})
 end
 
+local function guid_object()
+    for _, guid_pattern in ipairs(Guid_Patterns) do
+        local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), false)
+        if match_pos then
+            vim.cmd(string.format(':normal! 0%dlv%dl', match_pos.col - 1, #match_pos.text - 1))
+            return
+        end
+    end
+end
+
 return {
-    setup = setup,
     guid_format = guid_format,
     guid_insert = guid_insert,
+    guid_object = guid_object,
+    setup = setup,
 }
