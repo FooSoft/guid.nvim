@@ -1,0 +1,293 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: bash -l
+
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /home/alex
+
+  # Export additional ENV variables
+  env:
+    recording: true
+
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 80
+
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 24
+
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+
+  # Quality
+  # 1 - 100
+  quality: 100
+
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: null
+    title: null
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+
+  # The size of the font
+  fontSize: 12
+
+  # The height of lines
+  lineHeight: 1
+
+  # The spacing between letters
+  letterSpacing: 0
+
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+
+# Records, feel free to edit them
+records:
+  - delay: 221
+    content: "\r\n\e[?2004l\r\e]777;preexec\e\\\e[?1049h\e[22;0;0t\e[22;0t\e[?1h\e=\e[H\e[2J\e]11;?\a\e[?2004h\e[?u\e[c\e[?25h"
+  - delay: 40
+    content: "\e[?25l\e(B\e[m\e[H\e[2J\e[>4;2m\e[?1004h\e[?25h"
+  - delay: 9
+    content: "\e[?25l\e[38;2;25;35;48m\e[48;2;113;131;155m [No Name] \e(B\e[m\e[38;2;205;206;207m\e[48;2;19;26;36m\e[K\r\n\e(B\e[m\e[38;2;113;131;155m\e[48;2;25;35;48m  1 \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m\e[K\r\n\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m                                                                                \e[6;35H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mNVIM v0.8.2\e[8;19HNvim is open source and freely distributable\e[9;29Hhttps://neovim.io/#chat\e[11;18Htype  :help nvim\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m       if you are new! \e[12;18Htype  :checkhealth\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m     to optimize Nvim\e[13;18Htype  :q\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m               to exit         \e[14;18Htype  :help\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m            for help        \e[16;29HSponsor Vim development!\e[17;18Htype  :help sponsor\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m    for information \e]112\a\e[2 q\e]112\a\e[2 q\e[?1002h\e[?1006h\e[H\e(B\e[m\e[38;2;25;35;48m\e[48;2;113;131;155m [No Name] \e(B\e[m\e[38;2;205;206;207m\e[48;2;19;26;36m\e[K\r\n\e(B\e[m\e[38;2;113;131;155m\e[48;2;25;35;48m  1 \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m\e[K\r\n\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m~\e[K\r\n~\e[K\r\n~\e[K\r\n~                                 \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mNVIM v0.8.2\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~\e[K\r\n~                 \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mNvim is open source and freely distributable\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~                           \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mhttps://neovim.io/#chat\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~\e[K\r\n~                \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mtype  :help nvim\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m       if you are new! \e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~                \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mtype  :checkhealth\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m     to optimize Nvim\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~                \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mtype  :q\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m               to exit         \e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~                \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mtype  :help\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m            for help        \e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~\e[K\r\n~                           \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mSponsor Vim development!\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~                \e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mtype  :help sponsor\e(B\e[m\e[38;2;57;80;109m\e[48;2;25;35;48m<Enter>\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m    for information \e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\r\n~\e[K\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m\r\n\e[K\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m\n\e[J\e[2;5H\e[?25h\e[?25l\e[H\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m  [No Name] \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m                                                                    \e[6;35H\e(B\e[m\e[38;2;25;35;48m\e[48;2;25;35;48m \e[10X\e[8;19H \e[43X\e[9;29H \e[22X\e[11;18H \e[45X\e[12;18H \e[45X\e[13;18H \e[45X\e[14;18H \e[45X\e[16;29H \e[23X\e[17;18H \e[45X\r\e[6B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name]                                               \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 406
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:         \e[2;5H\e[?25h\e[?25l\r\e[22B\e[J:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name]                                              \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 118
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 159
+    content: "\e[?25lu\e[?25h"
+  - delay: 78
+    content: "\e[?25li\e[?25h"
+  - delay: 66
+    content: "\e[?25ld\e[?25h"
+  - delay: 672
+    content: "\e[?25lI\e[?25h"
+  - delay: 189
+    content: "\e[?25ln\e[?25h"
+  - delay: 85
+    content: "\e[?25ls\e[?25h"
+  - delay: 98
+    content: "\e[?25le\e[?25h"
+  - delay: 41
+    content: "\e[?25lr\e[?25h"
+  - delay: 193
+    content: "\e[?25lt\e[?25h"
+  - delay: 139
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;5Hcbb297c0-14a9-56bc-6d91-1d0ef9b42df9\e]112\a\e[2 q\e[?1002h\e[?1006h\e[36D\e[?25h\e[?25l\e[1;13H\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m●\e[1;14H \r\e[22B NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 420
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 130
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 143
+    content: "\e[?25lu\e[?25h"
+  - delay: 74
+    content: "\e[?25li\e[?25h"
+  - delay: 62
+    content: "\e[?25ld\e[?25h"
+  - delay: 258
+    content: "\e[?25lF\e[?25h"
+  - delay: 110
+    content: "\e[?25lo\e[?25h"
+  - delay: 94
+    content: "\e[?25lr\e[?25h"
+  - delay: 74
+    content: "\e[?25lm\e[?25h"
+  - delay: 107
+    content: "\e[?25la\e[?25h"
+  - delay: 41
+    content: "\e[?25lt\e[?25h"
+  - delay: 159
+    content: "\e[?25l\e[C\e[?25h"
+  - delay: 242
+    content: "\e[?25ln\e[?25h"
+  - delay: 606
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;13H14a956bc6d911d0ef9b42df9    \e]112\a\e[2 q\e[?1002h\e[?1006h\e[36D\e[?25h\e[?25l\r\e[21B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 419
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 164
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 179
+    content: "\e[?25lu\e[?25h"
+  - delay: 75
+    content: "\e[?25li\e[?25h"
+  - delay: 93
+    content: "\e[?25ld\e[?25h"
+  - delay: 180
+    content: "\e[?25lF\e[?25h"
+  - delay: 107
+    content: "\e[?25lo\e[?25h"
+  - delay: 102
+    content: "\e[?25lr\e[?25h"
+  - delay: 66
+    content: "\e[?25lm\e[?25h"
+  - delay: 113
+    content: "\e[?25la\e[?25h"
+  - delay: 38
+    content: "\e[?25lt\e[?25h"
+  - delay: 82
+    content: "\e[?25l\e[C\e[?25h"
+  - delay: 385
+    content: "\e[?25lb\e[?25h"
+  - delay: 238
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;5H\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m{\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mcbb297c0-14a9-56bc-6d91-1d0ef9b42df9\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m}\e]112\a\e[2 q\e[?1002h\e[?1006h\e[38D\e[?25h\e[?25l\r\e[21B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 477
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 573
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 229
+    content: "\e[?25lu\e[?25h"
+  - delay: 57
+    content: "\e[?25li\e[?25h"
+  - delay: 66
+    content: "\e[?25ld\e[?25h"
+  - delay: 181
+    content: "\e[?25lF\e[?25h"
+  - delay: 134
+    content: "\e[?25lo\e[?25h"
+  - delay: 143
+    content: "\e[?25lr\e[?25h"
+  - delay: 246
+    content: "\e[?25lm\e[?25h"
+  - delay: 123
+    content: "\e[?25la\e[?25h"
+  - delay: 61
+    content: "\e[?25lt\e[?25h"
+  - delay: 172
+    content: "\e[?25l\e[C\e[?25h"
+  - delay: 496
+    content: "\e[?25lp\e[?25h"
+  - delay: 381
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;5H\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m(\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mcbb297c0-14a9-56bc-6d91-1d0ef9b42df9\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m)\e]112\a\e[2 q\e[?1002h\e[?1006h\e[38D\e[?25h\e[?25l\r\e[21B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 497
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 146
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 119
+    content: "\e[?25lu\e[?25h"
+  - delay: 66
+    content: "\e[?25li\e[?25h"
+  - delay: 77
+    content: "\e[?25ld\e[?25h"
+  - delay: 193
+    content: "\e[?25lF\e[?25h"
+  - delay: 139
+    content: "\e[?25lo\e[?25h"
+  - delay: 156
+    content: "\e[?25lr\e[?25h"
+  - delay: 90
+    content: "\e[?25lm\e[?25h"
+  - delay: 94
+    content: "\e[?25la\e[?25h"
+  - delay: 53
+    content: "\e[?25lt\e[?25h"
+  - delay: 120
+    content: "\e[?25l\e[C\e[?25h"
+  - delay: 179
+    content: "\e[?25lx\e[?25h"
+  - delay: 443
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;5H\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m{\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m0xcbb297c0,0x14a9,0x56bc,{0x6d,0x91,0x1d,0x0e,0xf9,0xb4,0x2d,0xf9}\e(B\e[0;1m\e[38;2;219;192;116m\e[48;2;25;35;48m}\e]112\a\e[2 q\e[?1002h\e[?1006h\e[68D\e[?25h\e[?25l\r\e[21B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 338
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 150
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mG\e[?25h"
+  - delay: 164
+    content: "\e[?25lu\e[?25h"
+  - delay: 70
+    content: "\e[?25li\e[?25h"
+  - delay: 36
+    content: "\e[?25ld\e[?25h"
+  - delay: 209
+    content: "\e[?25lF\e[?25h"
+  - delay: 103
+    content: "\e[?25lo\e[?25h"
+  - delay: 119
+    content: "\e[?25lr\e[?25h"
+  - delay: 95
+    content: "\e[?25lm\e[?25h"
+  - delay: 122
+    content: "\e[?25la\e[?25h"
+  - delay: 53
+    content: "\e[?25lt\e[?25h"
+  - delay: 86
+    content: "\e[?25l\e[C\e[?25h"
+  - delay: 787
+    content: "\e[?25ld\e[?25h"
+  - delay: 278
+    content: "\e[?25l\r\e[24;1H\e[?25h\e[?25l\e[2;5Hcbb297c0-14a9-56bc-6d91-1d0ef9b42df9\e[32X\e]112\a\e[2 q\e[?1002h\e[?1006h\e[36D\e[?25h\e[?25l\r\e[21B\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m NORMAL \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                           \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;47;65;89m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;113;156;214m   1:1  \e[2;5H\e[?25h"
+  - delay: 1550
+    content: "\e[?25l\e[24;70H\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48m:\e[2;5H\e[?25h\e[?25l\r\e[22B\e[70X:\r\e[A\e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m COMMAND \e(B\e[m\e[38;2;174;175;176m\e[48;2;19;26;36m [No Name] [+]                                          \e[23;67H \e(B\e[m\e[38;2;205;206;207m\e[48;2;79;76;60m Top \e(B\e[0;1m\e[38;2;19;26;36m\e[48;2;219;192;116m   1:1  \e]112\a\e[2 q\e[?1002l\e[?1006l\e[24;2H\e[?25h"
+  - delay: 462
+    content: "\e[?25l\e(B\e[m\e[38;2;205;206;207m\e[48;2;25;35;48mq\e[?25h"
+  - delay: 258
+    content: "\e[?25l!\e[?25h"
+  - delay: 426
+    content: "\e[?25l\r\e[24;1H\e[?25h"
+  - delay: 5
+    content: "\e[?25l\e]112\a\e[2 q\e[?1002h\e[?1006h\e[?25h\e[?25l\e]112\a\e[2 q\e[?1002l\e[?1006l\e(B\e[m\e[?25h\e[?1l\e>\e[>4;0m\e[?1049l\e[23;0;0t\e[23;0t\e[?2004l\e[?1004l\e[?25h"
