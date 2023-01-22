@@ -58,10 +58,23 @@ local function find_pattern_at_pos(pattern, pos, check_col)
 end
 
 local function guid_generate()
+    -- Generate a pseudo-random GUID according to RFC 4122:
+    -- https://www.rfc-editor.org/rfc/rfc4122
+
+	-- Set all bits to randomly (or pseudo-randomly) chosen values.
     local bytes = {}
     for i = 1, 16 do
         bytes[i] = math.random(0, 255)
     end
+
+    -- Set the two most significant bits (bits 6 and 7) of the
+    -- clock_seq_hi_and_reserved to zero and one, respectively.
+    bytes[9] = bit.band(bit.bor(bytes[9], 0x80), 0x8f)
+
+    -- Set the four most significant bits (bits 12 through 15) of the
+    -- time_hi_and_version field to the 4-bit version number.
+    bytes[7] = bit.band(bit.bor(bytes[7], 0x40), bit.lshift(4, 4))
+
     return bytes
 end
 
