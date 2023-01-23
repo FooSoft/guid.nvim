@@ -1,17 +1,17 @@
 # guid.nvim
 
-This [Neovim](https://neovim.io/) plugin simplifies common operations when working with [Globally Unique
-Identifiers](https://en.wikipedia.org/wiki/Universally_unique_identifier) (GUIDs). As guid.nvim is written entirely in
-Lua, classic Vim is not supported.
+This Neovim-exclusive plugin simplifies common operations when working with [Globally Unique
+Identifiers](https://en.wikipedia.org/wiki/Universally_unique_identifier) (GUIDs). The produced values fully conform to
+the [RFC 4122](https://www.rfc-editor.org/rfc/rfc4122) spec for for pseudo-random GUIDs.
 
 ![](img/guid.nvim.gif)
 
 ## GUID Styles
 
-There a few standard ways to format GUIDs. The one-character format specifier for these styles are based on the
-convention outlined in the [documentation](https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0)
-for `Guid.ToString`. This set of specifiers was expanded to allow the case of hexadecimal characters to be specified.
-The casing of the specifier determines whether lowercase or uppercase will be used.
+There are several ways to represent GUIDs as text. The format specifier syntax outlined by
+[Guid.ToString](https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0) is borrowed for styling
+text output. This convention is expanded to allow the casing of hexadecimal characters to be specified. The casing of
+the format specifier determines whether lowercase or uppercase will be used.
 
 *   `n` `00000000000000000000000000000000` \
     32 digits.
@@ -42,7 +42,9 @@ The casing of the specifier determines whether lowercase or uppercase will be us
 ## GUID Text Object
 
 A custom text object for GUIDs is provided. By default it is bound to the `g` key. For example to yank a GUID you would
-input `yig` in normal mode. The GUID text object supports all of the GUID styles described above.
+input `yig` in normal mode (the functionally identical `yag` can also be used). The GUID text object supports all of the
+GUID formatting styles described above. Make sure to call `setup` if you wish to use GUID text objects (details in the
+next section).
 
 ## Configuration
 
@@ -57,7 +59,7 @@ require('guid').setup({
 })
 ```
 
-These options are:
+More specifically, these options are:
 
 *   `comma_space` \
     Determines if commas should be followed by spaces in GUIDs formatted with the `x` specifier.
