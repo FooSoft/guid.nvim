@@ -13,20 +13,15 @@ There are several ways to represent GUIDs as text. The format specifier syntax o
 text output. This convention is expanded to allow the casing of hexadecimal characters to be specified. The casing of
 the format specifier determines whether lowercase or uppercase will be used.
 
-*   `n` `00000000000000000000000000000000` \
-    32 digits.
-
-*   `d` `00000000-0000-0000-0000-000000000000` \
- 	32 digits separated by hyphens.
-
-*   `b` `{00000000-0000-0000-0000-000000000000}` \
- 	32 digits separated by hyphens, enclosed in braces.
-
-*   `p` `(00000000-0000-0000-0000-000000000000)` \
- 	32 digits separated by hyphens, enclosed in parenthesis.
-
-*   `x` `{0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}}` \
-    Four hexadecimal values enclosed in braces, where the fourth value is a subset of eight hexadecimal values that is also enclosed in braces.
+*   <kbd>n</kbd> `cbb297c014a940bc8d911d0ef9b42df9`
+*   <kbd>d</kbd> `cbb297c0-14a9-40bc-8d91-1d0ef9b42df9`
+*   <kbd>D</kbd> `CBB297C0-14A9-40BC-8D91-1D0EF9B42DF9`
+*   <kbd>b</kbd> `{cbb297c0-14a9-40bc-8d91-1d0ef9b42df9}`
+*   <kbd>B</kbd> `{CBB297C0-14A9-40BC-8D91-1D0EF9B42DF9}`
+*   <kbd>p</kbd> `(cbb297c0-14a9-40bc-8d91-1d0ef9b42df9)`
+*   <kbd>P</kbd> `(CBB297C0-14A9-40BC-8D91-1D0EF9B42DF9)`
+*   <kbd>x</kbd> `{0xcbb297c0,0x14a9,0x40bc,{0x8d,0x91,0x1d,0x0e,0xf9,0xb4,0x2d,0xf9}}`
+*   <kbd>X</kbd> `{0xCBB297C0,0x14A9,0x40BC,{0x8D,0x91,0x1D,0x0E,0xF9,0xB4,0x2D,0xF9}}`
 
 ## GUID Commands
 
@@ -59,7 +54,7 @@ require('guid').setup({
 })
 ```
 
-More specifically, these options are:
+Specifically, these options are:
 
 *   `comma_space` \
     Determines if commas should be followed by spaces in GUIDs formatted with the `x` specifier.
