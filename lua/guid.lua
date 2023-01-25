@@ -69,7 +69,7 @@ local function guid_generate()
 
     -- Set the two most significant bits (bits 6 and 7) of the
     -- clock_seq_hi_and_reserved to zero and one, respectively.
-    bytes[9] = bit.band(bit.bor(bytes[9], 0x80), 0x8f)
+    bytes[9] = bit.band(bit.bor(bytes[9], 0x80), 0xbf)
 
     -- Set the four most significant bits (bits 12 through 15) of the
     -- time_hi_and_version field to the 4-bit version number.

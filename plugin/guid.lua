@@ -18,6 +18,8 @@ if not vim.g.guid then
         guid.guid_object()
     end
 
+    math.randomseed(os.time())
+
     vim.api.nvim_create_user_command('GuidFormat', format, {nargs = '?'})
     vim.api.nvim_create_user_command('GuidInsert', insert, {nargs = '?'})
     vim.api.nvim_create_user_command('GuidObject', object, {})
