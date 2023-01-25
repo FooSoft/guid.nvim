@@ -1,6 +1,4 @@
 if not vim.g.guid then
-    local guid = require('guid')
-
     local function reload()
         package.loaded.guid = nil
         guid = require('guid')
@@ -19,6 +17,7 @@ if not vim.g.guid then
     end
 
     math.randomseed(os.time())
+    reload()
 
     vim.api.nvim_create_user_command('GuidFormat', format, {nargs = '?'})
     vim.api.nvim_create_user_command('GuidInsert', insert, {nargs = '?'})
