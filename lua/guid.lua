@@ -1,10 +1,10 @@
-Config = {
+local GuidConfig = {
     comma_space = false,
     default_style = 'd',
     object_char = 'g',
 }
 
-Guid_Patterns = {
+local Guid_Patterns = {
     '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
     '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
     '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
@@ -15,14 +15,14 @@ Guid_Patterns = {
 local function setup(config)
     if config then
         for key, value in pairs(config) do
-            Config[key] = config[key] or value
+            GuidConfig[key] = config[key] or value
         end
     end
 
-    if Config.object_char then
+    if GuidConfig.object_char then
         for _, mode in ipairs({'x', 'o'}) do
             for _, prefix in ipairs({'i', 'a'}) do
-                vim.api.nvim_set_keymap(mode, prefix .. Config.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true})
+                vim.api.nvim_set_keymap(mode, prefix .. GuidConfig.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true})
             end
         end
     end
@@ -93,7 +93,7 @@ end
 
 local function guid_print(guid, style)
     if style == '' then
-        style = Config.default_style
+        style = GuidConfig.default_style
     end
 
     -- Format specifier definition:
@@ -126,7 +126,7 @@ local function guid_print(guid, style)
         guid_printed = guid_printed:upper():gsub('X', 'x')
     end
 
-    if Config.comma_space then
+    if GuidConfig.comma_space then
         guid_printed = guid_printed:gsub(',', ', ')
     end
 
