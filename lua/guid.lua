@@ -4,7 +4,7 @@ local GuidConfig = {
     object_char = 'g',
 }
 
-local Guid_Patterns = {
+local GuidPatterns = {
     '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
     '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
     '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
@@ -141,7 +141,7 @@ local function guid_insert(style)
 end
 
 local function guid_format(style)
-    for _, guid_pattern in ipairs(Guid_Patterns) do
+    for _, guid_pattern in ipairs(GuidPatterns) do
         local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), true)
         if match_pos then
             local line = vim.fn.getline(match_pos.row)
@@ -159,7 +159,7 @@ local function guid_format(style)
 end
 
 local function guid_object()
-    for _, guid_pattern in ipairs(Guid_Patterns) do
+    for _, guid_pattern in ipairs(GuidPatterns) do
         local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), false)
         if match_pos then
             vim.cmd(string.format(':normal! 0%dlv%dl', match_pos.col - 1, #match_pos.text - 1))
