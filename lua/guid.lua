@@ -35,8 +35,8 @@ end
 
 local function insert_text_at_pos(text, pos)
     local line = vim.fn.getline(pos.row)
-    local prefix = string.sub(line, 0, pos.col - 1) ---@diagnostic disable-line: param-type-mismatch
-    local suffix = string.sub(line, pos.col) ---@diagnostic disable-line: param-type-mismatch
+    local prefix = string.sub(line, 0, pos.col - 1)
+    local suffix = string.sub(line, pos.col)
     vim.fn.setline(pos.row, prefix .. text .. suffix)
 end
 
@@ -145,8 +145,8 @@ local function guid_format(style)
         local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), true)
         if match_pos then
             local line = vim.fn.getline(match_pos.row)
-            local line_prefix = line:sub(1, match_pos.col - 1) ---@diagnostic disable-line: undefined-field
-            local line_suffix = line:sub(match_pos.col + #match_pos.text) ---@diagnostic disable-line: undefined-field
+            local line_prefix = line:sub(1, match_pos.col - 1)
+            local line_suffix = line:sub(match_pos.col + #match_pos.text)
             local guid_printed = guid_print(guid_parse(match_pos.text), style)
             if guid_printed then
                 vim.fn.setline(match_pos.row, line_prefix .. guid_printed .. line_suffix)

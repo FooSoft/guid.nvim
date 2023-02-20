@@ -40,7 +40,7 @@ GUID text representation. The case of the format specifier determines whether lo
 | Format | Example |
 | - | - |
 | <kbd>n</kbd> | `cbb297c014a940bc8d911d0ef9b42df9` |
-| <kbd>n</kbd> | `CBB297C014A940BC8D911D0EF9B42DF9` |
+| <kbd>N</kbd> | `CBB297C014A940BC8D911D0EF9B42DF9` |
 | <kbd>d</kbd> | `cbb297c0-14a9-40bc-8d91-1d0ef9b42df9` |
 | <kbd>D</kbd> | `CBB297C0-14A9-40BC-8D91-1D0EF9B42DF9` |
 | <kbd>b</kbd> | `{cbb297c0-14a9-40bc-8d91-1d0ef9b42df9}` |
