@@ -22,14 +22,14 @@ require('guid').setup({
 
 These options are:
 
-*   `comma_space` \
-    Specifies if commas should be followed by spaces in GUIDs formatted with the `x` and `X` specifiers.
+#### `comma_space`
+Specifies if commas should be followed by spaces in GUIDs formatted with the `x` and `X` specifiers.
 
-*   `default_style` \
-    Specifies which format to use if one is not provided for `GuidInsert` and `GuidFormat` commands.
+#### `default_style`
+Specifies which format to use if one is not provided for `GuidInsert` and `GuidFormat` commands.
 
-*   `object-char` \
-    Specifies which character should be used for the GUID text object.
+#### `object_char`
+Specifies which character should be used for the GUID text object.
 
 ## GUID Formatting
 
@@ -52,14 +52,14 @@ GUID text representation. The case of the format specifier determines whether lo
 
 ## GUID Commands
 
-*   `GuidInsert [format]` \
-    Inserts a GUID at the cursor position using the default or provided format.
+#### `GuidInsert [format]`
+Inserts a GUID at the cursor position using the default or provided format.
 
-*   `GuidFormat [format]` \
-    Formats the GUID at the cursor position using the default or provided format.
+#### `GuidFormat [format]`
+Formats the GUID at the cursor position using the default or provided format.
 
-*   `GuidObject` \
-    Selects the GUID at the cursor position (useful for text objects).
+#### `GuidObject`
+Selects the GUID at the cursor position (useful for text objects).
 
 ## GUID Text Object
 
