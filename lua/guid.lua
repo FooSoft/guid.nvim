@@ -162,7 +162,9 @@ local function guid_object()
     for _, guid_pattern in ipairs(GuidPatterns) do
         local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), false)
         if match_pos then
-            vim.cmd(string.format(':normal! 0%dlv%dl', match_pos.col - 1, #match_pos.text - 1))
+            local cursor_pos = get_cursor_pos()
+            vim.fn.cursor(cursor_pos.row, match_pos.col)
+            vim.cmd(string.format(':normal! v%dl', #match_pos.text - 1))
             return
         end
     end
