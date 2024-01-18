@@ -163,7 +163,7 @@ local function guid_object()
         local match_pos = find_pattern_at_pos(guid_pattern, get_cursor_pos(), false)
         if match_pos then
             local cursor_pos = get_cursor_pos()
-            vim.fn.cursor(cursor_pos.row, match_pos.col)
+            vim.fn.cursor({cursor_pos.row, match_pos.col})
             vim.cmd(string.format(':normal! v%dl', #match_pos.text - 1))
             return
         end
