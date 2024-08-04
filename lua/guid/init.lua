@@ -163,6 +163,21 @@ local function guid_insert(style)
     end
 end
 
+local function guid_append(style)
+    local append_text_at_pos = function(text, pos)
+        local line = vim.fn.getline(pos.row)
+        local prefix = string.sub(line, 0, pos.col)
+        local suffix = string.sub(line, pos.col)
+        vim.fn.setline(pos.row, prefix .. text .. suffix)
+    end
+
+    local guid = Guid:generate()
+    local guid_printed = guid:print(style)
+    if guid_printed then
+        append_text_at_pos(guid_printed, get_cursor_pos())
+    end
+end
+
 local function guid_format(style)
     local guid_match = Guid.find(get_cursor_pos(), true)
     if guid_match then
@@ -190,6 +205,7 @@ end
 return {
     guid_format = guid_format,
     guid_insert = guid_insert,
+    guid_append = guid_append,
     guid_object = guid_object,
     setup = GuidConfig.setup,
 }

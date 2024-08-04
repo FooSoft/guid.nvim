@@ -11,6 +11,10 @@ if not vim.g.guid then
         require('guid').guid_insert(ctx.args)
     end
 
+    local function guid_append(ctx)
+        require('guid').guid_append(ctx.args)
+    end
+
     local function guid_format(ctx)
         require('guid').guid_format(ctx.args)
     end
@@ -23,6 +27,7 @@ if not vim.g.guid then
 
     vim.api.nvim_create_user_command('GuidFormat', guid_format, {nargs = '?'})
     vim.api.nvim_create_user_command('GuidInsert', guid_insert, {nargs = '?'})
+    vim.api.nvim_create_user_command('GuidAppend', guid_append, {nargs = '?'})
     vim.api.nvim_create_user_command('GuidObject', guid_object, {})
     vim.api.nvim_create_user_command('GuidReload', guid_reload, {})
 
