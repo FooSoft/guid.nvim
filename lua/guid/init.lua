@@ -1,8 +1,129 @@
+--
+-- GuidConfig
+--
+
 local GuidConfig = {
     comma_space = false,
     default_style = 'd',
     object_char = 'g',
 }
+
+--
+-- Guid
+--
+
+local Guid = {}
+Guid.__index = Guid
+
+function Guid.find(pos, check_col)
+    local patterns = {
+        '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
+        '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
+        '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
+        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
+        '[0-9a-fA-F]\\{32\\}', -- n
+    }
+
+    local find_pattern = function(pattern, flags)
+        local row, col = unpack(vim.fn.searchpos(pattern, flags))
+        if row ~= 0 or col ~= 0 then
+            local text = vim.fn.matchstr(vim.fn.getline(row), pattern)
+            return {row = row, col = col, text = text}
+        end
+    end
+
+    local find_pattern_at_pos = function(pattern)
+        for _, flags in ipairs({'cnW', 'bnW'}) do
+            local match_pos = find_pattern(pattern, flags)
+            if match_pos and match_pos.row == pos.row and (not check_col or match_pos.col <= pos.col and match_pos.col + #match_pos.text > pos.col) then
+                return match_pos
+            end
+        end
+    end
+
+    for _, pattern in ipairs(patterns) do
+        local match_pos = find_pattern_at_pos(pattern)
+        if match_pos then
+            return {row = match_pos.row, col = match_pos.col, text = match_pos.text, guid = Guid.parse(match_pos.text)}
+        end
+    end
+end
+
+function Guid.generate()
+    -- Generate a pseudo-random GUID according to RFC 4122:
+    -- https://www.rfc-editor.org/rfc/rfc4122
+
+	-- Set all bits to randomly (or pseudo-randomly) chosen values.
+    local bytes = {}
+    for i = 1, 16 do
+        bytes[i] = math.random(0, 255)
+    end
+
+    -- Set the two most significant bits (bits 6 and 7) of the
+    -- clock_seq_hi_and_reserved to zero and one, respectively.
+    bytes[9] = bit.band(bit.bor(bytes[9], 0x80), 0xbf)
+
+    -- Set the four most significant bits (bits 12 through 15) of the
+    -- time_hi_and_version field to the 4-bit version number.
+    bytes[7] = bit.band(bit.bor(bytes[7], 0x40), bit.lshift(4, 4))
+
+    return setmetatable(bytes, Guid)
+end
+
+function Guid.parse(text)
+    local text_stripped = text:gsub('[{}()%-, ]', ''):gsub('0x', '')
+    assert(#text_stripped == 32)
+
+    local bytes = {}
+    for i = 0, 30, 2 do
+        local text_byte = text_stripped:sub(1 + i, 2 + i)
+        table.insert(bytes, tonumber(text_byte, 16))
+    end
+
+    return bytes
+end
+
+function Guid.print(guid, style)
+    if style == '' then
+        style = GuidConfig.default_style
+    end
+
+    -- Format specifier definition:
+    -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
+
+    local format = nil
+    local style_lower = style:lower()
+    if style_lower == 'n' then
+        -- 00000000000000000000000000000000
+        format = '%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x'
+    elseif style_lower == 'd' then
+        -- 00000000-0000-0000-0000-000000000000
+        format = '%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x'
+    elseif style_lower == 'b' then
+        -- {00000000-0000-0000-0000-000000000000}
+        format = '{%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x}'
+    elseif style_lower == 'p' then
+        -- (00000000-0000-0000-0000-000000000000)
+        format = '(%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x)'
+    elseif style_lower == 'x' then
+        -- {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}}
+        format = '{0x%.2x%.2x%.2x%.2x,0x%.2x%.2x,0x%.2x%.2x,{0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x}}'
+    else
+        vim.api.nvim_notify('Unrecognized GUID format!', vim.log.levels.ERROR, {})
+        return
+    end
+
+    local guid_printed = string.format(format, unpack(guid))
+    if style:upper() == style then
+        guid_printed = guid_printed:upper():gsub('X', 'x')
+    end
+
+    if GuidConfig.comma_space then
+        guid_printed = guid_printed:gsub(',', ', ')
+    end
+
+    return guid_printed
+end
 
 local GuidPatterns = {
     '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
@@ -21,9 +142,7 @@ local function setup(config)
 
     if GuidConfig.object_char then
         for _, mode in ipairs({'x', 'o'}) do
-            for _, prefix in ipairs({'i', 'a'}) do
-                vim.api.nvim_set_keymap(mode, prefix .. GuidConfig.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true})
-            end
+            for _, prefix in ipairs({'i', 'a'}) do vim.api.nvim_set_keymap(mode, prefix .. GuidConfig.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true}) end
         end
     end
 end
