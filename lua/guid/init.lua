@@ -30,6 +30,9 @@ local Guid = {}
 Guid.__index = Guid
 
 function Guid.find(pos, check_col)
+    -- Format specifier definition:
+    -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
+
     local patterns = {
         '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
         '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
