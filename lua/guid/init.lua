@@ -106,7 +106,7 @@ function Guid:print(style)
     -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
 
     local format = nil
-    local style_lower = style:lower()
+    local style_lower = style:lower():match('^%s*(.-)%s*$')
     if style_lower == 'n' then
         -- 00000000000000000000000000000000
         format = '%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x'
@@ -132,7 +132,7 @@ function Guid:print(style)
         guid_printed = guid_printed:upper():gsub('X', 'x')
     end
 
-    if GuidConfig.comma_space then
+    if GuidConfig.comma_space or style:match('%s') then
         guid_printed = guid_printed:gsub(',', ', ')
     end
 
