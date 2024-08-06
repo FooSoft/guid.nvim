@@ -170,7 +170,7 @@ local function guid_append(style)
     local append_text_at_pos = function(text, pos)
         local line = vim.fn.getline(pos.row)
         local prefix = string.sub(line, 0, pos.col)
-        local suffix = string.sub(line, pos.col)
+        local suffix = string.sub(line, pos.col + 1)
         vim.fn.setline(pos.row, prefix .. text .. suffix)
     end
 
