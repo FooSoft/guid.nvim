@@ -5,19 +5,12 @@
 local GuidConfig = {
     comma_space = false,
     default_style = 'd',
-    object_char = 'g',
 }
 
 function GuidConfig.setup(config)
     if config then
         for key, value in pairs(config) do
             GuidConfig[key] = config[key] or value
-        end
-    end
-
-    if GuidConfig.object_char then
-        for _, mode in ipairs({'x', 'o'}) do
-            for _, prefix in ipairs({'i', 'a'}) do vim.api.nvim_set_keymap(mode, prefix .. GuidConfig.object_char, ':<C-u>GuidObject<cr>', {noremap = true, silent = true}) end
         end
     end
 end
