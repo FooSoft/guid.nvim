@@ -1,18 +1,50 @@
 --
--- GuidConfig
+-- Globals
 --
 
-local GuidConfig = {
-    comma_space = false,
-    default_style = 'd',
+local Options = {
+    default = 'd',
+    styles = {
+        n = '????????????????????????????????',
+        d = '????????-????-????-????-????????????',
+        b = '{????????-????-????-????-????????????}',
+        p = '(????????-????-????-????-????????????)',
+        x = '{0x????????,0x????,0x????,{0x??,0x??,0x??,0x??,0x??,0x??,0x??,0x??}}',
+    },
 }
 
-function GuidConfig.setup(config)
-    if config then
-        for key, value in pairs(config) do
-            GuidConfig[key] = config[key] or value
-        end
-    end
+--
+-- Helpers
+--
+
+local function set_cursor_position(position)
+    vim.fn.setcursorcharpos({position.row, position.col})
+end
+
+local function get_cursor_position()
+    local _, row, col, _ = unpack(vim.fn.getpos('.'))
+    return {row = row, col = col}
+end
+
+local function insert_text_at_position(text, position)
+    local line = vim.fn.getline(position.row)
+    local prefix = string.sub(line, 0, position.col - 1)
+    local suffix = string.sub(line, position.col)
+    vim.fn.setline(position.row, prefix .. text .. suffix)
+end
+
+local function append_text_at_position(text, position)
+    local line = vim.fn.getline(position.row)
+    local prefix = string.sub(line, 0, position.col)
+    local suffix = string.sub(line, position.col + 1)
+    vim.fn.setline(position.row, prefix .. text .. suffix)
+end
+
+local function replace_text_at_match(text, match)
+    local line = vim.fn.getline(match.row)
+    local prefix = line:sub(1, match.col - 1)
+    local suffix = line:sub(match.col + #match.text)
+    vim.fn.setline(match.row, prefix .. text .. suffix)
 end
 
 --
@@ -22,44 +54,12 @@ end
 local Guid = {}
 Guid.__index = Guid
 
-function Guid.find(pos, check_col)
-    -- Format specifier definition:
-    -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
-
-    local patterns = {
-        '{\\s*0x[0-9a-fA-F]\\{8\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*0x[0-9a-fA-F]\\{4\\},\\s*{\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\},\\s*0x[0-9a-fA-F]\\{2\\}\\s*}\\s*}', -- x
-        '(\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*)', -- p
-        '{\\s*[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}\\s*}', -- b
-        '[0-9a-fA-F]\\{8\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{4\\}-[0-9a-fA-F]\\{12\\}', -- d
-        '[0-9a-fA-F]\\{32\\}', -- n
-    }
-
-    local find_pattern = function(pattern, flags)
-        local row, col = unpack(vim.fn.searchpos(pattern, flags))
-        if row ~= 0 or col ~= 0 then
-            local text = vim.fn.matchstr(vim.fn.getline(row), pattern)
-            return {row = row, col = col, text = text}
-        end
-    end
-
-    local find_pattern_at_pos = function(pattern)
-        for _, flags in ipairs({'cnW', 'bnW'}) do
-            local match_pos = find_pattern(pattern, flags)
-            if match_pos and match_pos.row == pos.row and (not check_col or match_pos.col <= pos.col and match_pos.col + #match_pos.text > pos.col) then
-                return match_pos
-            end
-        end
-    end
-
-    for _, pattern in ipairs(patterns) do
-        local match_pos = find_pattern_at_pos(pattern)
-        if match_pos then
-            return {row = match_pos.row, col = match_pos.col, text = match_pos.text, guid = Guid.parse(match_pos.text)}
-        end
-    end
+function Guid.new(bytes, match)
+    local guid = {bytes = bytes, match = match}
+    return setmetatable(guid, Guid)
 end
 
-function Guid.generate()
+function Guid.from_random()
     -- Generate a pseudo-random GUID according to RFC 4122:
     -- https://www.rfc-editor.org/rfc/rfc4122
 
@@ -77,131 +77,232 @@ function Guid.generate()
     -- time_hi_and_version field to the 4-bit version number.
     bytes[7] = bit.band(bit.bor(bytes[7], 0x40), bit.lshift(4, 4))
 
-    return setmetatable(bytes, Guid)
+    return Guid.new(bytes)
 end
 
-function Guid.parse(text)
-    local text_stripped = text:gsub('[{}()%-, ]', ''):gsub('0x', '')
-    assert(#text_stripped == 32)
-
-    local bytes = {}
-    for i = 0, 30, 2 do
-        local text_byte = text_stripped:sub(1 + i, 2 + i)
-        table.insert(bytes, tonumber(text_byte, 16))
+function Guid.from_position(position, guid_flags)
+    local pattern_to_lua_expression = function(style_pattern)
+        style_pattern = style_pattern: gsub('?', '([0-9a-fA-F])')
+        style_pattern = style_pattern: gsub('%s+', '%s*')
+        style_pattern = style_pattern: gsub(',', ',%s*')
+        return style_pattern
     end
 
-    return setmetatable(bytes, Guid)
+    local pattern_to_vim_expression = function(style_pattern)
+        style_pattern = style_pattern: gsub('?', '[0-9a-fA-F]')
+        style_pattern = style_pattern: gsub('%s+', '\\s*')
+        style_pattern = style_pattern: gsub(',', ',\\s*')
+        return style_pattern
+    end
+
+    local find_expression_with_flags = function(expression, search_flags)
+        local cursor_position = get_cursor_position()
+
+        set_cursor_position(position)
+        local row, col = unpack(vim.fn.searchpos(expression, search_flags))
+        set_cursor_position(cursor_position)
+
+        if row ~= 0 and col ~= 0 then
+            return {
+                row = row,
+                col = col,
+                text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression),
+                distance = math.abs(col - position.col),
+            }
+        end
+    end
+
+    local find_expression = function(expression)
+        local search_flag_sets = {}
+        if guid_flags.forward then
+            table.insert(search_flag_sets, 'cnW')
+        end
+        if guid_flags.backward then
+            table.insert(search_flag_sets, 'bnW')
+        end
+
+        local best_match = nil
+        for _, search_flags in ipairs(search_flag_sets) do
+            local match = find_expression_with_flags(expression, search_flags)
+
+            local valid_match = match and match.row == position.row
+            if valid_match and guid_flags.restrict then
+                valid_match = position.col >= match.col and position.col <= match.col + #match.text
+            end
+
+            if valid_match and (not best_match or best_match.distance > match.distance) then
+                best_match = match
+            end
+        end
+
+        return best_match
+    end
+
+    local parse_guid_bytes = function(guid_text, expression)
+        local guid_bytes = {}
+        local guid_byte = 0
+
+        for i, guid_nibble_text in ipairs({guid_text:match(expression)}) do
+            local guid_nibble = tonumber(guid_nibble_text, 16)
+            if i % 2 == 1 then
+                guid_byte = bit.lshift(guid_nibble, 4)
+            else
+                guid_byte = bit.bor(guid_byte, guid_nibble)
+                table.insert(guid_bytes, guid_byte)
+            end
+        end
+
+        return guid_bytes
+    end
+
+    local best_guid
+    for style_name, style_pattern in pairs(Options.styles) do
+        local match = find_expression(pattern_to_vim_expression(style_pattern))
+        if match and (not best_guid or best_guid.match.distance > match.distance) then
+            local guid_bytes = parse_guid_bytes(match.text, pattern_to_lua_expression(style_pattern))
+            if guid_bytes then
+                match.style = style_name
+                best_guid = Guid.new(guid_bytes, match)
+            end
+        end
+    end
+
+    return best_guid
 end
 
-function Guid:print(style)
-    if style == '' then
-        style = GuidConfig.default_style
+function Guid:format(pattern)
+    if not pattern then
+        pattern = string.rep('%x', #self.bytes * 2)
     end
 
-    -- Format specifier definition:
-    -- https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0
+    local guid_nibbles = {}
+    for _, b in ipairs(self.bytes) do
+        table.insert(guid_nibbles, bit.rshift(bit.band(b, 0xf0), 4))
+        table.insert(guid_nibbles, bit.band(b, 0x0f))
+    end
 
-    local format = nil
-    local style_lower = style:lower():match('^%s*(.-)%s*$')
-    if style_lower == 'n' then
-        -- 00000000000000000000000000000000
-        format = '%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x'
-    elseif style_lower == 'd' then
-        -- 00000000-0000-0000-0000-000000000000
-        format = '%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x'
-    elseif style_lower == 'b' then
-        -- {00000000-0000-0000-0000-000000000000}
-        format = '{%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x}'
-    elseif style_lower == 'p' then
-        -- (00000000-0000-0000-0000-000000000000)
-        format = '(%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x)'
-    elseif style_lower == 'x' then
-        -- {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}}
-        format = '{0x%.2x%.2x%.2x%.2x,0x%.2x%.2x,0x%.2x%.2x,{0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x,0x%.2x}}'
+    return string.format(pattern, unpack(guid_nibbles))
+end
+
+function Guid:format_with_style(style_name)
+    style_name = vim.trim(style_name)
+    if style_name == '' then
+        style_name = Options.default
+    end
+
+    local style_name_lower = style_name:lower()
+    local style_pattern = Options.styles[style_name_lower]
+    if style_pattern then
+        local nibble_pattern = '%%X'
+        if style_name == style_name_lower then
+            nibble_pattern = '%%x'
+        end
+
+        local pattern = style_pattern:gsub('?', nibble_pattern)
+        return self:format(pattern)
     else
-        vim.api.nvim_notify('Unrecognized GUID format!', vim.log.levels.ERROR, {})
-        return
+        vim.notify('Unexpected GUID style: %s', style_name)
     end
+end
 
-    local guid_printed = string.format(format, unpack(self))
-    if style:upper() == style then
-        guid_printed = guid_printed:upper():gsub('X', 'x')
-    end
-
-    if GuidConfig.comma_space or style:match('%s') then
-        guid_printed = guid_printed:gsub(',', ', ')
-    end
-
-    return guid_printed
+function Guid:select()
+    vim.fn.cursor({self.match.row, self.match.col})
+    vim.cmd(string.format(':normal! v%dl', #self.match.text - 1))
 end
 
 --
--- Functions
+-- Exports
 --
 
-local function get_cursor_pos()
-    local _, row, col, _ = unpack(vim.fn.getpos('.'))
-    return {row = row, col = col}
+local function setup(config)
+    Options = vim.tbl_deep_extend('force', Options, config)
 end
 
-local function guid_insert(style)
-    local insert_text_at_pos = function(text, pos)
-        local line = vim.fn.getline(pos.row)
-        local prefix = string.sub(line, 0, pos.col - 1)
-        local suffix = string.sub(line, pos.col)
-        vim.fn.setline(pos.row, prefix .. text .. suffix)
-    end
-
-    local guid = Guid:generate()
-    local guid_printed = guid:print(style)
-    if guid_printed then
-        insert_text_at_pos(guid_printed, get_cursor_pos())
+local function insert(ctx)
+    local guid = Guid:from_random()
+    local guid_text = guid:format_with_style(ctx.args)
+    if guid_text then
+        insert_text_at_position(
+            guid_text,
+            get_cursor_position()
+        )
     end
 end
 
-local function guid_append(style)
-    local append_text_at_pos = function(text, pos)
-        local line = vim.fn.getline(pos.row)
-        local prefix = string.sub(line, 0, pos.col)
-        local suffix = string.sub(line, pos.col + 1)
-        vim.fn.setline(pos.row, prefix .. text .. suffix)
-    end
-
-    local guid = Guid:generate()
-    local guid_printed = guid:print(style)
-    if guid_printed then
-        append_text_at_pos(guid_printed, get_cursor_pos())
+local function append(ctx)
+    local guid = Guid:from_random()
+    local guid_text = guid:format_with_style(ctx.args)
+    if guid_text then
+        append_text_at_position(
+            guid_text,
+            get_cursor_position()
+        )
     end
 end
 
-local function guid_format(style)
-    local guid_match = Guid.find(get_cursor_pos(), true)
-    if guid_match then
-        local line = vim.fn.getline(guid_match.row)
-        local line_prefix = line:sub(1, guid_match.col - 1)
-        local line_suffix = line:sub(guid_match.col + #guid_match.text)
-        local guid_printed = guid_match.guid:print(style)
-        if guid_printed then
-            vim.fn.setline(guid_match.row, line_prefix .. guid_printed .. line_suffix)
+local function format(ctx)
+    local guid = Guid.from_position(
+        get_cursor_position(),
+        {forward = true, backward = true, restrict = true}
+    )
+
+    if guid then
+        local guid_text = guid:format_with_style(ctx.args)
+        if guid_text then
+            replace_text_at_match(guid_text, guid.match)
         end
     else
-        vim.api.nvim_notify('No GUID found at cursor!', vim.log.levels.ERROR, {})
+        vim.notify('No GUID found at cursor')
     end
 end
 
-local function guid_object()
-    local guid_match = Guid.find(get_cursor_pos(), false)
-    if guid_match then
-        local cursor_pos = get_cursor_pos()
-        vim.fn.cursor({cursor_pos.row, guid_match.col})
-        vim.cmd(string.format(':normal! v%dl', #guid_match.text - 1))
+local function spin(ctx)
+    local guid_buckets = {}
+    for row = ctx.line1, ctx.line2 do
+        local col = 1
+        while true do
+            local guid = Guid.from_position(
+                {row = row, col = col},
+                {forward = true}
+            )
+
+            if guid then
+                local guid_text = guid:format()
+                local guid_bucket = guid_buckets[guid_text] or {}
+                table.insert(guid_bucket, guid)
+                guid_buckets[guid_text] = guid_bucket
+                col = guid.match.col + #guid.match.text
+            else
+                break
+            end
+        end
+    end
+
+    for _, guid_bucket in pairs(guid_buckets) do
+        local random_guid = Guid:from_random()
+        for _, guid in ipairs(guid_bucket) do
+            local random_guid_text = random_guid:format_with_style(guid.match.style)
+            replace_text_at_match(random_guid_text, guid.match)
+        end
+    end
+end
+
+local function object()
+    local guid = Guid.from_position(
+        get_cursor_position(),
+        {forward = true, backward = true}
+    )
+
+    if guid then
+        guid:select()
     end
 end
 
 return {
-    guid_format = guid_format,
-    guid_insert = guid_insert,
-    guid_append = guid_append,
-    guid_object = guid_object,
-    setup = GuidConfig.setup,
+    append = append,
+    format = format,
+    insert = insert,
+    object = object,
+    setup = setup,
+    spin = spin,
 }

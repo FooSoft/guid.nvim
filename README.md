@@ -10,21 +10,23 @@ The plugin is configured via the `setup` function. Options may be provided to ch
 
 ```lua
 require('guid').setup({
-    comma_space = false,
-    default_style = 'd',
+    default = 'd',
+    styles = {
+        n = '????????????????????????????????',
+        d = '????????-????-????-????-????????????',
+        b = '{????????-????-????-????-????????????}',
+        p = '(????????-????-????-????-????????????)',
+        x = '{0x????????,0x????,0x????,{0x??,0x??,0x??,0x??,0x??,0x??,0x??,0x??}}',
+    },
 })
 ```
-#### `comma_space`
-
-Specifies if commas should be followed by spaces in GUIDs formatted with the `x` and `X` specifiers.
-
-#### `default_style`
+#### `default`
 
 Specifies which format to use if one is not provided for `GuidInsert`, `GuidAppend`, and `GuidFormat` commands.
 
 ## Formatting
 
-The format specifier syntax outlined by [Guid.ToString](https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0) is borrowed for styling GUID text representation. The casing of the format specifier determines whether lowercase or uppercase will be used.
+The format specifier syntax outlined by [Guid.ToString](https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0) is borrowed for the default GUID styles. The casing of the format specifier determines whether lowercase or uppercase will be used. You can modify these mappings and introduce new GUID styles as you see fit.
 
 | Format       | Example                                                                |
 | -            | -                                                                      |
@@ -58,6 +60,10 @@ Appends a GUID at the cursor position using the optionally provided format.
 #### `GuidFormat [format]`
 
 Formats the GUID at the cursor position using the optionally provided format.
+
+#### `GuidSpin [range]`
+
+Regenerates the selected GUIDs while preserving their style. GUIDs are bucketed by their value, meaning that identical GUIDs will still have matching (but new) values after after this operation.
 
 #### `GuidObject`
 

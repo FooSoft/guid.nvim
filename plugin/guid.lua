@@ -1,5 +1,5 @@
 if not vim.g.guid then
-    local function guid_reload()
+    local function reload()
         for name, _ in pairs(package.loaded) do
             if vim.startswith(name, 'guid') then
                 package.loaded[name] = nil
@@ -7,29 +7,34 @@ if not vim.g.guid then
         end
     end
 
-    local function guid_insert(ctx)
-        require('guid').guid_insert(ctx.args)
+    local function insert(ctx)
+        require('guid').insert(ctx)
     end
 
-    local function guid_append(ctx)
-        require('guid').guid_append(ctx.args)
+    local function append(ctx)
+        require('guid').append(ctx)
     end
 
-    local function guid_format(ctx)
-        require('guid').guid_format(ctx.args)
+    local function format(ctx)
+        require('guid').format(ctx)
     end
 
-    local function guid_object()
-        require('guid').guid_object()
+    local function spin(ctx)
+        require('guid').spin(ctx)
+    end
+
+    local function object()
+        require('guid').object()
     end
 
     math.randomseed(os.time())
 
-    vim.api.nvim_create_user_command('GuidFormat', guid_format, {nargs = '?'})
-    vim.api.nvim_create_user_command('GuidInsert', guid_insert, {nargs = '?'})
-    vim.api.nvim_create_user_command('GuidAppend', guid_append, {nargs = '?'})
-    vim.api.nvim_create_user_command('GuidObject', guid_object, {})
-    vim.api.nvim_create_user_command('GuidReload', guid_reload, {})
+    vim.api.nvim_create_user_command('GuidFormat', format, {nargs = '?'})
+    vim.api.nvim_create_user_command('GuidInsert', insert, {nargs = '?'})
+    vim.api.nvim_create_user_command('GuidAppend', append, {nargs = '?'})
+    vim.api.nvim_create_user_command('GuidSpin', spin, {range = true})
+    vim.api.nvim_create_user_command('GuidObject', object, {})
+    vim.api.nvim_create_user_command('GuidReload', reload, {})
 
     vim.g.guid = true
 end
