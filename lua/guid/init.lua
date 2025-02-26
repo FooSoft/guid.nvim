@@ -82,16 +82,16 @@ end
 
 function Guid.from_position(position, guid_flags)
     local pattern_to_lua_expression = function(style_pattern)
-        style_pattern = style_pattern: gsub('?', '([0-9a-fA-F])')
-        style_pattern = style_pattern: gsub('%s+', '%s*')
-        style_pattern = style_pattern: gsub(',', ',%s*')
+        style_pattern = style_pattern:gsub('?', '([0-9a-fA-F])')
+        style_pattern = style_pattern:gsub('%s+', '%s*')
+        style_pattern = style_pattern:gsub(',', ',%s*')
         return style_pattern
     end
 
     local pattern_to_vim_expression = function(style_pattern)
-        style_pattern = style_pattern: gsub('?', '[0-9a-fA-F]')
-        style_pattern = style_pattern: gsub('%s+', '\\s*')
-        style_pattern = style_pattern: gsub(',', ',\\s*')
+        style_pattern = style_pattern:gsub('?', '[0-9a-fA-F]')
+        style_pattern = style_pattern:gsub('%s+', '\\s*')
+        style_pattern = style_pattern:gsub(',', ',\\s*')
         return style_pattern
     end
 
@@ -152,7 +152,9 @@ function Guid.from_position(position, guid_flags)
             end
         end
 
-        return guid_bytes
+        if #guid_bytes > 0 then
+            return guid_bytes
+        end
     end
 
     local best_guid
@@ -201,7 +203,7 @@ function Guid:format_with_style(style_name)
         local pattern = style_pattern:gsub('?', nibble_pattern)
         return self:format(pattern)
     else
-        vim.notify('Unexpected GUID style: %s', style_name)
+        vim.notify('Unexpected GUID style')
     end
 end
 
