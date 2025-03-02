@@ -102,12 +102,13 @@ function Guid.from_position(position, guid_flags)
         local row, col = unpack(vim.fn.searchpos(expression, search_flags))
         set_cursor_position(cursor_position)
 
+        local guid_text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression)
         if row ~= 0 and col ~= 0 then
             return {
                 row = row,
                 col = col,
-                text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression),
-                distance = math.abs(col - position.col),
+                text = guid_text,
+                distance = math.max(0, math.abs(col - position.col) - #guid_text)
             }
         end
     end
@@ -157,13 +158,28 @@ function Guid.from_position(position, guid_flags)
         end
     end
 
-    local best_guid
+    local styles = {}
     for style_name, style_pattern in pairs(Options.styles) do
-        local match = find_expression(pattern_to_vim_expression(style_pattern))
+        table.insert(styles, {
+            name = style_name,
+            pattern = style_pattern
+        })
+    end
+
+    table.sort(
+        styles,
+        function (a, b)
+            return #a.pattern > #b.pattern
+        end
+    )
+
+    local best_guid
+    for _, style in ipairs(styles) do
+        local match = find_expression(pattern_to_vim_expression(style.pattern))
         if match and (not best_guid or best_guid.match.distance > match.distance) then
-            local guid_bytes = parse_guid_bytes(match.text, pattern_to_lua_expression(style_pattern))
+            local guid_bytes = parse_guid_bytes(match.text, pattern_to_lua_expression(style.pattern))
             if guid_bytes then
-                match.style = style_name
+                match.style = style.name
                 best_guid = Guid.new(guid_bytes, match)
             end
         end
