@@ -309,7 +309,7 @@ end
 local function object()
     local guid = Guid.from_position(
         get_cursor_position(),
-        {forward = true, backward = true}
+        {forward = true, backward = true, restrict = true}
     )
 
     if guid then
