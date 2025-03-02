@@ -82,6 +82,7 @@ end
 
 function Guid.from_position(position, guid_flags)
     local pattern_to_lua_expression = function(style_pattern)
+        style_pattern = style_pattern:gsub('[%(%)%%%.%+%-%*%[%]%^%$]', '%%%1')
         style_pattern = style_pattern:gsub('?', '([0-9a-fA-F])')
         style_pattern = style_pattern:gsub('%s+', '%s*')
         style_pattern = style_pattern:gsub(',', ',%s*')
