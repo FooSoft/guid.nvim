@@ -2,7 +2,7 @@
 
 This plugin makes working with [Globally Unique Identifiers](https://en.wikipedia.org/wiki/Universally_unique_identifier) easier in Neovim. Generated GUIDs conform to the [RFC 4122](https://www.rfc-editor.org/rfc/rfc4122) spec for pseudo-random identifiers.
 
-![](img/guid.nvim.gif)
+![](img/demo.gif)
 
 ## Configuration
 
