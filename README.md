@@ -24,6 +24,10 @@ require('guid').setup({
 
 Specifies which format to use if one is not provided for `GuidInsert`, `GuidAppend`, and `GuidFormat` commands.
 
+### `styles`
+
+Specifies template map used for parsing and printing GUIDs. The question marks are placeholders for hexadecimal characters.
+
 ## Formatting
 
 The format specifier syntax outlined by [Guid.ToString](https://learn.microsoft.com/en-us/dotnet/api/system.guid.tostring?view=net-7.0) is borrowed for the default GUID styles. The casing of the format specifier determines whether lowercase or uppercase will be used. You can modify these mappings and introduce new GUID styles as you see fit.
