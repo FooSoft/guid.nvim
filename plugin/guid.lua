@@ -11,7 +11,7 @@ vim.api.nvim_create_user_command(
     function(ctx)
         require('guid').format(ctx)
     end,
-    {nargs = '?'}
+    { nargs = '?' }
 )
 
 vim.api.nvim_create_user_command(
@@ -19,7 +19,7 @@ vim.api.nvim_create_user_command(
     function(ctx)
         require('guid').insert(ctx)
     end,
-    {nargs = '?'}
+    { nargs = '?' }
 )
 
 vim.api.nvim_create_user_command(
@@ -27,7 +27,7 @@ vim.api.nvim_create_user_command(
     function(ctx)
         require('guid').append(ctx)
     end,
-    {nargs = '?'}
+    { nargs = '?' }
 )
 
 vim.api.nvim_create_user_command(
@@ -35,7 +35,7 @@ vim.api.nvim_create_user_command(
     function(ctx)
         require('guid').spin(ctx)
     end,
-    {range = true}
+    { range = true }
 )
 
 vim.api.nvim_create_user_command(

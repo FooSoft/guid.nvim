@@ -18,12 +18,12 @@ local Options = {
 --
 
 local function set_cursor_position(position)
-    vim.fn.setcursorcharpos({position.row, position.col})
+    vim.fn.setcursorcharpos({ position.row, position.col })
 end
 
 local function get_cursor_position()
     local _, row, col, _ = unpack(vim.fn.getpos('.'))
-    return {row = row, col = col}
+    return { row = row, col = col }
 end
 
 local function insert_text_at_position(text, position)
@@ -55,7 +55,7 @@ local Guid = {}
 Guid.__index = Guid
 
 function Guid.new(bytes, match)
-    local guid = {bytes = bytes, match = match}
+    local guid = { bytes = bytes, match = match }
     return setmetatable(guid, Guid)
 end
 
@@ -63,7 +63,7 @@ function Guid.from_random()
     -- Generate a pseudo-random GUID according to RFC 4122:
     -- https://www.rfc-editor.org/rfc/rfc4122
 
-	-- Set all bits to randomly (or pseudo-randomly) chosen values.
+    -- Set all bits to randomly (or pseudo-randomly) chosen values.
     local bytes = {}
     for i = 1, 16 do
         bytes[i] = math.random(0, 255)
@@ -144,7 +144,7 @@ function Guid.from_position(position, guid_flags)
         local guid_bytes = {}
         local guid_byte = 0
 
-        for i, guid_nibble_text in ipairs({guid_text:match(expression)}) do
+        for i, guid_nibble_text in ipairs({ guid_text:match(expression) }) do
             local guid_nibble = tonumber(guid_nibble_text, 16)
             if i % 2 == 1 then
                 guid_byte = bit.lshift(guid_nibble, 4)
@@ -169,7 +169,7 @@ function Guid.from_position(position, guid_flags)
 
     table.sort(
         styles,
-        function (a, b)
+        function(a, b)
             return #a.pattern > #b.pattern
         end
     )
@@ -225,7 +225,7 @@ function Guid:format_with_style(style_name)
 end
 
 function Guid:select()
-    vim.fn.cursor({self.match.row, self.match.col})
+    vim.fn.cursor({ self.match.row, self.match.col })
     vim.cmd(string.format(':normal! v%dl', #self.match.text - 1))
 end
 
@@ -262,7 +262,7 @@ end
 local function format(ctx)
     local guid = Guid.from_position(
         get_cursor_position(),
-        {forward = true, backward = true, restrict = true}
+        { forward = true, backward = true, restrict = true }
     )
 
     if guid then
@@ -281,8 +281,8 @@ local function spin(ctx)
         local col = 1
         while true do
             local guid = Guid.from_position(
-                {row = row, col = col},
-                {forward = true}
+                { row = row, col = col },
+                { forward = true }
             )
 
             if guid then
@@ -309,7 +309,7 @@ end
 local function object()
     local guid = Guid.from_position(
         get_cursor_position(),
-        {forward = true, backward = true, restrict = true}
+        { forward = true, backward = true, restrict = true }
     )
 
     if guid then
