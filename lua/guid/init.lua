@@ -60,7 +60,7 @@ function Guid.new(bytes, match)
 end
 
 function Guid.from_random()
-    -- Generate a pseudo-random GUID according to RFC 4122:
+    -- Generate a pseudo-random GUID (version 4) according to RFC 4122:
     -- https://www.rfc-editor.org/rfc/rfc4122
 
     -- Set all bits to randomly (or pseudo-randomly) chosen values.
@@ -70,12 +70,12 @@ function Guid.from_random()
     end
 
     -- Set the two most significant bits (bits 6 and 7) of the
-    -- clock_seq_hi_and_reserved to zero and one, respectively.
-    bytes[9] = bit.band(bit.bor(bytes[9], 0x80), 0xbf)
+    -- clock_seq_hi_and_reserved to zero and one, respectively (variant 1).
+    bytes[9] = bit.bor(bit.band(bytes[9], 0x3f), 0x80)
 
     -- Set the four most significant bits (bits 12 through 15) of the
-    -- time_hi_and_version field to the 4-bit version number.
-    bytes[7] = bit.band(bit.bor(bytes[7], 0x40), bit.lshift(4, 4))
+    -- time_hi_and_version field to the 4-bit version number (0100 for version 4).
+    bytes[7] = bit.bor(bit.band(bytes[7], 0x0f), 0x40)
 
     return Guid.new(bytes)
 end
