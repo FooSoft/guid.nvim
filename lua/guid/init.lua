@@ -233,11 +233,13 @@ end
 -- Exports
 --
 
-local function setup(config)
+local M = {}
+
+function M.setup(config)
     Options = vim.tbl_deep_extend('force', Options, config)
 end
 
-local function insert(ctx)
+function M.insert(ctx)
     local guid = Guid:from_random()
     local guid_text = guid:format_with_style(ctx.args)
     if guid_text then
@@ -248,7 +250,7 @@ local function insert(ctx)
     end
 end
 
-local function append(ctx)
+function M.append(ctx)
     local guid = Guid:from_random()
     local guid_text = guid:format_with_style(ctx.args)
     if guid_text then
@@ -259,7 +261,7 @@ local function append(ctx)
     end
 end
 
-local function format(ctx)
+function M.format(ctx)
     local guid = Guid.from_position(
         get_cursor_position(),
         { forward = true, backward = true, restrict = true }
@@ -275,7 +277,7 @@ local function format(ctx)
     end
 end
 
-local function spin(ctx)
+function M.spin(ctx)
     local guid_buckets = {}
     for row = ctx.line1, ctx.line2 do
         local col = 1
@@ -306,7 +308,8 @@ local function spin(ctx)
     end
 end
 
-local function object()
+function M.object()
+    print('hi')
     local guid = Guid.from_position(
         get_cursor_position(),
         { forward = true, backward = true, restrict = true }
@@ -317,11 +320,4 @@ local function object()
     end
 end
 
-return {
-    append = append,
-    format = format,
-    insert = insert,
-    object = object,
-    setup = setup,
-    spin = spin,
-}
+return M
