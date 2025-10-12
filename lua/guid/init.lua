@@ -120,7 +120,7 @@ function Guid.from_position(position, guid_flags)
             local match = find_expression_with_flags(expression, search_flags.flags)
 
             local valid_match = match and match.row == position.row
-            if valid_match and search_flags.restrict and guid_flags.restrict then
+            if valid_match and guid_flags.restrict then
                 valid_match = position.col >= match.col and position.col <= match.col + #match.text
             end
 
@@ -265,37 +265,52 @@ function M.format(ctx)
             replace_text_at_match(guid_text, guid.match)
         end
     else
-        vim.notify('No GUID found at cursor', vim.log.levels.WARN)
+        vim.notify('No GUID to format at cursor', vim.log.levels.WARN)
     end
 end
 
 function M.spin(ctx)
-    local guid_buckets = {}
-    for row = ctx.line1, ctx.line2 do
-        local col = 1
-        while true do
-            local guid = Guid.from_position(
-                { row = row, col = col },
-                { forward = true }
-            )
+    if ctx.count == -1 then
+        local guid = Guid.from_position(
+            get_cursor_position(),
+            { forward = true, backward = true, restrict = true }
+        )
 
-            if guid then
-                local guid_text = guid:format()
-                local guid_bucket = guid_buckets[guid_text] or {}
-                table.insert(guid_bucket, guid)
-                guid_buckets[guid_text] = guid_bucket
-                col = guid.match.col + #guid.match.text
-            else
-                break
-            end
-        end
-    end
-
-    for _, guid_bucket in pairs(guid_buckets) do
-        local random_guid = Guid:from_random()
-        for _, guid in ipairs(guid_bucket) do
+        if guid then
+            local random_guid = Guid:from_random()
             local random_guid_text = random_guid:format_with_style(guid.match.style)
             replace_text_at_match(random_guid_text, guid.match)
+        else
+            vim.notify('No GUID to spin at cursor', vim.log.levels.WARN)
+        end
+    else
+        local guid_buckets = {}
+        for row = ctx.line1, ctx.line2 do
+            local col = 1
+            while true do
+                local guid = Guid.from_position(
+                    { row = row, col = col },
+                    { forward = true }
+                )
+
+                if guid then
+                    local guid_text = guid:format()
+                    local guid_bucket = guid_buckets[guid_text] or {}
+                    table.insert(guid_bucket, guid)
+                    guid_buckets[guid_text] = guid_bucket
+                    col = guid.match.col + #guid.match.text
+                else
+                    break
+                end
+            end
+        end
+
+        for _, guid_bucket in pairs(guid_buckets) do
+            local random_guid = Guid:from_random()
+            for _, guid in ipairs(guid_bucket) do
+                local random_guid_text = random_guid:format_with_style(guid.match.style)
+                replace_text_at_match(random_guid_text, guid.match)
+            end
         end
     end
 end
