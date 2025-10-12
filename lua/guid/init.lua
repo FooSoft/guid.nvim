@@ -1,6 +1,4 @@
---
--- Globals
---
+-- locals
 
 local Options = {
     default = 'd',
@@ -13,10 +11,6 @@ local Options = {
     },
 }
 
---
--- Helpers
---
-
 local function set_cursor_position(position)
     vim.fn.setcursorcharpos({ position.row, position.col })
 end
@@ -28,15 +22,15 @@ end
 
 local function insert_text_at_position(text, position)
     local line = vim.fn.getline(position.row)
-    local prefix = string.sub(line, 0, position.col - 1)
-    local suffix = string.sub(line, position.col)
+    local prefix = line:sub(0, position.col - 1)
+    local suffix = line:sub(position.col)
     vim.fn.setline(position.row, prefix .. text .. suffix)
 end
 
 local function append_text_at_position(text, position)
     local line = vim.fn.getline(position.row)
-    local prefix = string.sub(line, 0, position.col)
-    local suffix = string.sub(line, position.col + 1)
+    local prefix = line:sub(0, position.col)
+    local suffix = line:sub(position.col + 1)
     vim.fn.setline(position.row, prefix .. text .. suffix)
 end
 
@@ -47,9 +41,7 @@ local function replace_text_at_match(text, match)
     vim.fn.setline(match.row, prefix .. text .. suffix)
 end
 
---
--- Guid
---
+-- guids
 
 local Guid = {}
 Guid.__index = Guid
@@ -117,18 +109,18 @@ function Guid.from_position(position, guid_flags)
     local find_expression = function(expression)
         local search_flag_sets = {}
         if guid_flags.forward then
-            table.insert(search_flag_sets, 'cnW')
+            table.insert(search_flag_sets, { flags = 'cnW', restrict = false })
         end
         if guid_flags.backward then
-            table.insert(search_flag_sets, 'bnW')
+            table.insert(search_flag_sets, { flags = 'bnW', restrict = true })
         end
 
         local best_match = nil
         for _, search_flags in ipairs(search_flag_sets) do
-            local match = find_expression_with_flags(expression, search_flags)
+            local match = find_expression_with_flags(expression, search_flags.flags)
 
             local valid_match = match and match.row == position.row
-            if valid_match and guid_flags.restrict then
+            if valid_match and search_flags.restrict and guid_flags.restrict then
                 valid_match = position.col >= match.col and position.col <= match.col + #match.text
             end
 
@@ -220,7 +212,7 @@ function Guid:format_with_style(style_name)
         local pattern = style_pattern:gsub('?', nibble_pattern)
         return self:format(pattern)
     else
-        vim.notify('Unexpected GUID style')
+        vim.notify('Unknown GUID style', vim.log.levels.ERROR)
     end
 end
 
@@ -273,7 +265,7 @@ function M.format(ctx)
             replace_text_at_match(guid_text, guid.match)
         end
     else
-        vim.notify('No GUID found at cursor')
+        vim.notify('No GUID found at cursor', vim.log.levels.WARN)
     end
 end
 
@@ -309,7 +301,6 @@ function M.spin(ctx)
 end
 
 function M.object()
-    print('hi')
     local guid = Guid.from_position(
         get_cursor_position(),
         { forward = true, backward = true, restrict = true }
