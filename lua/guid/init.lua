@@ -95,13 +95,20 @@ function Guid.from_position(position, guid_flags)
         local row, col = unpack(vim.fn.searchpos(expression, search_flags))
         set_cursor_position(cursor_position)
 
-        local guid_text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression)
         if row ~= 0 and col ~= 0 then
+            local guid_text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression)
+            local guid_distance = 0
+            if cursor_position.col < col then
+                guid_distance = col - cursor_position.col
+            elseif cursor_position.col > col + #guid_text - 1 then
+                guid_distance = cursor_position.col - (col + #guid_text - 1)
+            end
+
             return {
                 row = row,
                 col = col,
                 text = guid_text,
-                distance = math.max(0, math.abs(col - position.col) - #guid_text)
+                distance = guid_distance
             }
         end
     end
@@ -109,19 +116,19 @@ function Guid.from_position(position, guid_flags)
     local find_expression = function(expression)
         local search_flag_sets = {}
         if guid_flags.forward then
-            table.insert(search_flag_sets, { flags = 'cnW', restrict = false })
+            table.insert(search_flag_sets, 'cnW')
         end
         if guid_flags.backward then
-            table.insert(search_flag_sets, { flags = 'bnW', restrict = true })
+            table.insert(search_flag_sets, 'bnW')
         end
 
         local best_match = nil
         for _, search_flags in ipairs(search_flag_sets) do
-            local match = find_expression_with_flags(expression, search_flags.flags)
+            local match = find_expression_with_flags(expression, search_flags)
 
             local valid_match = match and match.row == position.row
-            if valid_match and guid_flags.restrict then
-                valid_match = position.col >= match.col and position.col <= match.col + #match.text
+            if valid_match and search_flags:find('b') then
+                valid_match = match.distance == 0
             end
 
             if valid_match and (not best_match or best_match.distance > match.distance) then
@@ -256,7 +263,7 @@ end
 function M.format(ctx)
     local guid = Guid.from_position(
         get_cursor_position(),
-        { forward = true, backward = true, restrict = true }
+        { forward = true, backward = true }
     )
 
     if guid then
@@ -273,7 +280,7 @@ function M.spin(ctx)
     if ctx.count == -1 then
         local guid = Guid.from_position(
             get_cursor_position(),
-            { forward = true, backward = true, restrict = true }
+            { forward = true, backward = true }
         )
 
         if guid then
@@ -318,7 +325,7 @@ end
 function M.object()
     local guid = Guid.from_position(
         get_cursor_position(),
-        { forward = true, backward = true, restrict = true }
+        { forward = true, backward = true }
     )
 
     if guid then
