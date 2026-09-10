@@ -1,10 +1,7 @@
 if vim.g.guid_loaded then
     return
-else
-    vim.g.guid_loaded = true
 end
-
-math.randomseed(os.time())
+vim.g.guid_loaded = true
 
 vim.api.nvim_create_user_command(
     'GuidFormat',

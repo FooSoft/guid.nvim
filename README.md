@@ -26,7 +26,7 @@ Specifies which format to use if one is not provided for `GuidInsert`, `GuidAppe
 
 ### `styles`
 
-Specifies template map used for parsing and printing GUIDs. The question marks are placeholders for hexadecimal characters.
+Specifies the template map used for parsing and printing GUIDs. Style names must be nonempty lowercase strings. Each template must contain exactly 32 question marks (one per hexadecimal digit) and no line breaks. Other characters are treated literally; whitespace is allowed inside delimiters and around commas.
 
 ## Formatting
 
@@ -63,12 +63,22 @@ Appends a GUID at the cursor position using the optionally provided format.
 
 #### `GuidFormat [format]`
 
-Formats the GUID at the cursor position using the optionally provided format.
+Formats the GUID at the cursor position using the optionally provided format. If the cursor is not on a GUID, the next GUID on the same line is used.
 
-#### `GuidSpin [range]`
+#### `[range]GuidSpin`
 
-Regenerates the selected GUIDs while preserving their style. GUIDs are bucketed by their value, meaning that identical GUIDs will still have matching (but new) values after after this operation.
+Without a range, regenerates the GUID at the cursor (or the next one on the same line). With a range, regenerates every GUID on those lines; for example, `:%GuidSpin` processes the whole buffer.
+
+Identical GUID values receive the same new value within the range, even when written in different styles or cases. Each occurrence keeps its style and uppercase or lowercase digits; mixed-case digits are normalized to lowercase. Extra whitespace inside a GUID is normalized to its style template.
 
 #### `GuidObject`
 
-Selects the GUID at the cursor position.
+Selects the GUID at the cursor position, or the next GUID on the same line.
+
+## Tests
+
+Run the regression tests from the repository root:
+
+```sh
+./test.sh
+```

@@ -1,6 +1,4 @@
--- locals
-
-local Options = {
+local options = {
     default = 'd',
     styles = {
         n = '????????????????????????????????',
@@ -11,325 +9,236 @@ local Options = {
     },
 }
 
-local function set_cursor_position(position)
-    vim.fn.setcursorcharpos({ position.row, position.col })
-end
-
-local function get_cursor_position()
-    local _, row, col, _ = unpack(vim.fn.getpos('.'))
-    return { row = row, col = col }
-end
-
-local function insert_text_at_position(text, position)
-    local line = vim.fn.getline(position.row)
-    local prefix = line:sub(0, position.col - 1)
-    local suffix = line:sub(position.col)
-    vim.fn.setline(position.row, prefix .. text .. suffix)
-end
-
-local function append_text_at_position(text, position)
-    local line = vim.fn.getline(position.row)
-    local prefix = line:sub(0, position.col)
-    local suffix = line:sub(position.col + 1)
-    vim.fn.setline(position.row, prefix .. text .. suffix)
-end
-
-local function replace_text_at_match(text, match)
-    local line = vim.fn.getline(match.row)
-    local prefix = line:sub(1, match.col - 1)
-    local suffix = line:sub(match.col + #match.text)
-    vim.fn.setline(match.row, prefix .. text .. suffix)
-end
-
--- guids
-
-local Guid = {}
-Guid.__index = Guid
-
-function Guid.new(bytes, match)
-    local guid = { bytes = bytes, match = match }
-    return setmetatable(guid, Guid)
-end
-
-function Guid.from_random()
-    -- Generate a pseudo-random GUID (version 4) according to RFC 4122:
-    -- https://www.rfc-editor.org/rfc/rfc4122
-
-    -- Set all bits to randomly (or pseudo-randomly) chosen values.
-    local bytes = {}
-    for i = 1, 16 do
-        bytes[i] = math.random(0, 255)
-    end
-
-    -- Set the two most significant bits (bits 6 and 7) of the
-    -- clock_seq_hi_and_reserved to zero and one, respectively (variant 1).
-    bytes[9] = bit.bor(bit.band(bytes[9], 0x3f), 0x80)
-
-    -- Set the four most significant bits (bits 12 through 15) of the
-    -- time_hi_and_version field to the 4-bit version number (0100 for version 4).
-    bytes[7] = bit.bor(bit.band(bytes[7], 0x0f), 0x40)
-
-    return Guid.new(bytes)
-end
-
-function Guid.from_position(position, guid_flags)
-    local pattern_to_lua_expression = function(style_pattern)
-        style_pattern = style_pattern:gsub('[%(%)%%%.%+%-%*%[%]%^%$]', '%%%1')
-        style_pattern = style_pattern:gsub('?', '([0-9a-fA-F])')
-        style_pattern = style_pattern:gsub('[ ,%(%{%[%<]', '%1%%s*')
-        style_pattern = style_pattern:gsub('[ ,%)%}%]%>]', '%%s*%1')
-        return style_pattern
-    end
-
-    local pattern_to_vim_expression = function(style_pattern)
-        style_pattern = style_pattern:gsub('?', '[0-9a-fA-F]')
-        style_pattern = style_pattern:gsub('[ ,%(%{%[%<]', '%1\\s*')
-        style_pattern = style_pattern:gsub('[ ,%)%}%]%>]', '\\s*%1')
-        return style_pattern
-    end
-
-    local find_expression_with_flags = function(expression, search_flags)
-        local cursor_position = get_cursor_position()
-
-        set_cursor_position(position)
-        local row, col = unpack(vim.fn.searchpos(expression, search_flags))
-        set_cursor_position(cursor_position)
-
-        if row ~= 0 and col ~= 0 then
-            local guid_text = vim.fn.matchstr(vim.fn.getline(row):sub(col), expression)
-            local guid_distance = 0
-            if cursor_position.col < col then
-                guid_distance = col - cursor_position.col
-            elseif cursor_position.col > col + #guid_text - 1 then
-                guid_distance = cursor_position.col - (col + #guid_text - 1)
-            end
-
-            return {
-                row = row,
-                col = col,
-                text = guid_text,
-                distance = guid_distance
-            }
-        end
-    end
-
-    local find_expression = function(expression)
-        local search_flag_sets = {}
-        if guid_flags.forward then
-            table.insert(search_flag_sets, 'cnW')
-        end
-        if guid_flags.backward then
-            table.insert(search_flag_sets, 'bnW')
-        end
-
-        local best_match = nil
-        for _, search_flags in ipairs(search_flag_sets) do
-            local match = find_expression_with_flags(expression, search_flags)
-
-            local valid_match = match and match.row == position.row
-            if valid_match and search_flags:find('b') then
-                valid_match = match.distance == 0
-            end
-
-            if valid_match and (not best_match or best_match.distance > match.distance) then
-                best_match = match
-            end
-        end
-
-        return best_match
-    end
-
-    local parse_guid_bytes = function(guid_text, expression)
-        local guid_bytes = {}
-        local guid_byte = 0
-
-        for i, guid_nibble_text in ipairs({ guid_text:match(expression) }) do
-            local guid_nibble = tonumber(guid_nibble_text, 16)
-            if i % 2 == 1 then
-                guid_byte = bit.lshift(guid_nibble, 4)
-            else
-                guid_byte = bit.bor(guid_byte, guid_nibble)
-                table.insert(guid_bytes, guid_byte)
-            end
-        end
-
-        if #guid_bytes > 0 then
-            return guid_bytes
-        end
-    end
-
+local function compile_styles(config)
     local styles = {}
-    for style_name, style_pattern in pairs(Options.styles) do
-        table.insert(styles, {
-            name = style_name,
-            pattern = style_pattern
-        })
-    end
+    for name, template in pairs(config.styles) do
+        assert(type(name) == 'string' and name ~= '' and name == name:lower(),
+            'GUID style names must be nonempty lowercase strings')
+        assert(type(template) == 'string', 'GUID style templates must be strings')
+        local _, count = template:gsub('%?', '')
+        assert(count == 32 and not template:find('[\r\n]'),
+            'GUID style templates must contain exactly 32 question marks on one line')
 
-    table.sort(
-        styles,
-        function(a, b)
-            return #a.pattern > #b.pattern
-        end
-    )
-
-    local best_guid
-    for _, style in ipairs(styles) do
-        local match = find_expression(pattern_to_vim_expression(style.pattern))
-        if match and (not best_guid or best_guid.match.distance > match.distance) then
-            local guid_bytes = parse_guid_bytes(match.text, pattern_to_lua_expression(style.pattern))
-            if guid_bytes then
-                match.style = style.name
-                best_guid = Guid.new(guid_bytes, match)
+        -- Capture only the 32 hex digits so parsing also works with literal
+        -- hex characters in the template, such as the "0x" prefixes in style x.
+        local pattern = template:gsub('.', function(char)
+            if char == '?' then
+                return '(%x)'
             end
+            local literal = char:gsub('(%W)', '%%%1')
+            -- Allow padding inside delimiters and on either side of commas.
+            if char:find('[ ,%)%}%]>]') then
+                literal = '%s*' .. literal
+            end
+            if char:find('[ ,%(%{%[<]') then
+                literal = literal .. '%s*'
+            end
+            return literal
+        end)
+        styles[#styles + 1] = { name = name, template = template, pattern = pattern }
+    end
+    assert(type(config.default) == 'string' and config.styles[config.default:lower()],
+        'Unknown default GUID style')
+    -- Prefer enclosing styles over the plain GUID inside them.
+    table.sort(styles, function(a, b)
+        if #a.template == #b.template then
+            return a.name < b.name
+        end
+        return #a.template > #b.template
+    end)
+    return styles
+end
+
+local styles = compile_styles(options)
+
+local function random_guid()
+    -- Use system entropy without reseeding Lua's shared math.random generator.
+    local bytes = { assert((vim.uv or vim.loop).random(16)):byte(1, 16) }
+    -- Keep the random low bits and replace only the version/variant high bits.
+    bytes[7] = bytes[7] % 16 + 0x40 -- Version 4.
+    bytes[9] = bytes[9] % 64 + 0x80 -- RFC 4122 variant.
+    for i, byte in ipairs(bytes) do
+        bytes[i] = string.format('%02x', byte)
+    end
+    return table.concat(bytes)
+end
+
+local function resolve_style(name)
+    name = vim.trim(name or '')
+    if name == '' then
+        name = options.default
+    end
+    if options.styles[name:lower()] then
+        return name
+    end
+    vim.notify('Unknown GUID style: ' .. name, vim.log.levels.ERROR)
+end
+
+local function format_guid(value, style)
+    if style ~= style:lower() then
+        value = value:upper()
+    end
+    local index = 0
+    -- A replacement function leaves literal '%' characters in templates intact.
+    return (options.styles[style:lower()]:gsub('%?', function()
+        index = index + 1
+        return value:sub(index, index)
+    end))
+end
+
+-- Columns are one-based byte positions. This never moves the editor cursor.
+local function find_guid(line, col, forward_only)
+    local best
+    for _, style in ipairs(styles) do
+        -- Cursor lookup must include GUIDs that begin before the cursor.
+        -- Range scanning starts after the previous match to avoid duplicates.
+        local start = forward_only and col or 1
+        while start <= #line do
+            local match = { line:find(style.pattern, start) }
+            if not match[1] then
+                break
+            end
+            local first, last = match[1], match[2]
+            if last >= col then
+                -- Containing matches have distance zero; otherwise prefer the
+                -- nearest match ahead. Ties retain the enclosing style sorted first.
+                local distance = math.max(first - col, 0)
+                if not best or distance < best.distance then
+                    -- string.find returns the two bounds before its digit captures.
+                    local value = table.concat(match, '', 3)
+                    local name = style.name
+                    -- Preserve uniformly uppercase digits; normalize mixed case.
+                    if value:find('[A-F]') and not value:find('[a-f]') then
+                        name = name:upper()
+                    end
+                    best = {
+                        first = first,
+                        last = last,
+                        value = value:lower(),
+                        style = name,
+                        distance = distance,
+                    }
+                end
+                break
+            end
+            start = last + 1
         end
     end
-
-    return best_guid
+    return best
 end
 
-function Guid:format(pattern)
-    if not pattern then
-        pattern = string.rep('%x', #self.bytes * 2)
+local function guid_at_cursor()
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local guid = find_guid(vim.api.nvim_get_current_line(), cursor[2] + 1)
+    if guid then
+        guid.row = cursor[1]
     end
-
-    local guid_nibbles = {}
-    for _, b in ipairs(self.bytes) do
-        table.insert(guid_nibbles, bit.rshift(bit.band(b, 0xf0), 4))
-        table.insert(guid_nibbles, bit.band(b, 0x0f))
-    end
-
-    return string.format(pattern, unpack(guid_nibbles))
+    return guid
 end
 
-function Guid:format_with_style(style_name)
-    style_name = vim.trim(style_name)
-    if style_name == '' then
-        style_name = Options.default
-    end
-
-    local style_name_lower = style_name:lower()
-    local style_pattern = Options.styles[style_name_lower]
-    if style_pattern then
-        local nibble_pattern = '%%X'
-        if style_name == style_name_lower then
-            nibble_pattern = '%%x'
-        end
-
-        local pattern = style_pattern:gsub('?', nibble_pattern)
-        return self:format(pattern)
-    else
-        vim.notify('Unknown GUID style', vim.log.levels.ERROR)
-    end
+local function replace_guid(guid, text)
+    -- Convert to zero-based API offsets. The inclusive one-based last byte
+    -- already equals the exclusive zero-based end offset.
+    vim.api.nvim_buf_set_text(0, guid.row - 1, guid.first - 1,
+        guid.row - 1, guid.last, { text })
 end
 
-function Guid:select()
-    vim.fn.cursor({ self.match.row, self.match.col })
-    vim.cmd(string.format(':normal! v%dl', #self.match.text - 1))
+local function insert_guid(ctx, append)
+    local style = resolve_style(ctx.args)
+    if not style then
+        return
+    end
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local row, col = cursor[1] - 1, cursor[2]
+    if append then
+        local suffix = vim.api.nvim_get_current_line():sub(col + 1)
+        -- Skip the full UTF-8 character and its combining marks, not just a byte.
+        col = col + #vim.fn.strcharpart(suffix, 0, 1, 1)
+    end
+    vim.api.nvim_buf_set_text(0, row, col, row, col, { format_guid(random_guid(), style) })
 end
-
---
--- Exports
---
 
 local M = {}
 
 function M.setup(config)
-    Options = vim.tbl_deep_extend('force', Options, config)
+    local updated = vim.tbl_deep_extend('force', options, config or {})
+    -- Validate before committing either table so a bad setup leaves both usable.
+    local compiled = compile_styles(updated)
+    options, styles = updated, compiled
 end
 
 function M.insert(ctx)
-    local guid = Guid:from_random()
-    local guid_text = guid:format_with_style(ctx.args)
-    if guid_text then
-        insert_text_at_position(
-            guid_text,
-            get_cursor_position()
-        )
-    end
+    insert_guid(ctx, false)
 end
 
 function M.append(ctx)
-    local guid = Guid:from_random()
-    local guid_text = guid:format_with_style(ctx.args)
-    if guid_text then
-        append_text_at_position(
-            guid_text,
-            get_cursor_position()
-        )
-    end
+    insert_guid(ctx, true)
 end
 
 function M.format(ctx)
-    local guid = Guid.from_position(
-        get_cursor_position(),
-        { forward = true, backward = true }
-    )
-
+    local style = resolve_style(ctx.args)
+    if not style then
+        return
+    end
+    local guid = guid_at_cursor()
     if guid then
-        local guid_text = guid:format_with_style(ctx.args)
-        if guid_text then
-            replace_text_at_match(guid_text, guid.match)
-        end
+        replace_guid(guid, format_guid(guid.value, style))
     else
         vim.notify('No GUID to format at cursor', vim.log.levels.WARN)
     end
 end
 
 function M.spin(ctx)
-    if ctx.count == -1 then
-        local guid = Guid.from_position(
-            get_cursor_position(),
-            { forward = true, backward = true }
-        )
-
+    if ctx.range == 0 then
+        local guid = guid_at_cursor()
         if guid then
-            local random_guid = Guid:from_random()
-            local random_guid_text = random_guid:format_with_style(guid.match.style)
-            replace_text_at_match(random_guid_text, guid.match)
+            replace_guid(guid, format_guid(random_guid(), guid.style))
         else
             vim.notify('No GUID to spin at cursor', vim.log.levels.WARN)
         end
-    else
-        local guid_buckets = {}
-        for row = ctx.line1, ctx.line2 do
-            local col = 1
-            while true do
-                local guid = Guid.from_position(
-                    { row = row, col = col },
-                    { forward = true }
-                )
+        return
+    end
 
-                if guid then
-                    local guid_text = guid:format()
-                    local guid_bucket = guid_buckets[guid_text] or {}
-                    table.insert(guid_bucket, guid)
-                    guid_buckets[guid_text] = guid_bucket
-                    col = guid.match.col + #guid.match.text
-                else
-                    break
-                end
+    -- Collect matches before editing. Canonical lowercase values share one new
+    -- GUID across the range, while each occurrence retains its own style.
+    local replacements, values = {}, {}
+    for row = ctx.line1, ctx.line2 do
+        local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+        local col = 1
+        while col <= #line do
+            local guid = find_guid(line, col, true)
+            if not guid then
+                break
             end
+            guid.row = row
+            values[guid.value] = values[guid.value] or random_guid()
+            replacements[#replacements + 1] = guid
+            col = guid.last + 1
         end
-
-        for _, guid_bucket in pairs(guid_buckets) do
-            local random_guid = Guid:from_random()
-            for _, guid in ipairs(guid_bucket) do
-                local random_guid_text = random_guid:format_with_style(guid.match.style)
-                replace_text_at_match(random_guid_text, guid.match)
-            end
-        end
+    end
+    -- Work backwards so changes in template whitespace cannot shift later matches.
+    for i = #replacements, 1, -1 do
+        local guid = replacements[i]
+        replace_guid(guid, format_guid(values[guid.value], guid.style))
     end
 end
 
 function M.object()
-    local guid = Guid.from_position(
-        get_cursor_position(),
-        { forward = true, backward = true }
-    )
-
+    local guid = guid_at_cursor()
     if guid then
-        guid:select()
+        -- Start a fresh selection, including when called from Visual mode.
+        vim.cmd('normal! \27')
+        vim.api.nvim_win_set_cursor(0, { guid.row, guid.first - 1 })
+        vim.cmd('normal! v')
+        -- Custom templates may end in a multibyte character: place the cursor
+        -- on its first byte, rather than the final byte of the match.
+        local text = vim.api.nvim_get_current_line():sub(guid.first, guid.last)
+        local last_char = vim.fn.strcharpart(text, vim.fn.strchars(text) - 1, 1)
+        vim.api.nvim_win_set_cursor(0, { guid.row, guid.last - #last_char })
+        if vim.o.selection == 'exclusive' then
+            -- Move past the last character so it is included in the selection.
+            vim.cmd('normal! l')
+        end
     end
 end
 
